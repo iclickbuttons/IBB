@@ -6,224 +6,320 @@
 <title>IBB · ICB Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap');
 
-  :root {
-    --bg: #0a0a0b;
-    --bg2: #111113;
-    --bg3: #17171a;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0ede8;
-    --text2: #8a8880;
-    --text3: #55534f;
-    --orange: #e8632a;
-    --orange-dim: rgba(232,99,42,0.15);
-    --orange-glow: rgba(232,99,42,0.08);
-    --teal: #2acba8;
-    --teal-dim: rgba(42,203,168,0.12);
-    --red: #e83a3a;
-    --mono: 'Space Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-  }
+:root {
+  --bg: #080809;
+  --bg2: #0f0f11;
+  --bg3: #141416;
+  --bg4: #1a1a1d;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.11);
+  --text: #edeae4;
+  --text2: #7a7875;
+  --text3: #454340;
+  --orange: #f0622a;
+  --orange2: #ff8c5a;
+  --orange-dim: rgba(240,98,42,0.12);
+  --orange-glow: rgba(240,98,42,0.06);
+  --teal: #28c9a5;
+  --teal-dim: rgba(40,201,165,0.1);
+  --red: #e83a3a;
+  --mono: 'Space Mono', monospace;
+  --display: 'Inter', sans-serif;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; }
-  body { min-height: 100vh; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; }
+body { min-height: 100vh; }
 
-  /* ── layout ── */
-  .shell { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+/* ── price ticker bar ── */
+.price-bar { background: var(--bg2); border-bottom: 1px solid var(--border); }
+.price-bar-inner { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+.price-token { display: flex; align-items: center; gap: 12px; padding: 11px 28px 11px 0; border-right: 1px solid var(--border); margin-right: 28px; }
+.price-token:last-of-type { border-right: none; margin-right: 0; }
+.price-token-symbol { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .08em; }
+.price-token-usd { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+.price-token-change { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+.price-token-change.up { color: #28c9a5; background: rgba(40,201,165,0.1); }
+.price-token-change.down { color: #e85555; background: rgba(232,85,85,0.1); }
+.price-token-vol { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.price-updated { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+.price-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+.price-dot.pulsing { animation: blink 1.2s infinite; }
 
-  /* ── header ── */
-  .header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.5rem; gap: 1rem; flex-wrap: wrap; }
-  .header-left h1 { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
-  .header-left p  { font-size: 13px; color: var(--text2); margin-top: 4px; }
-  .live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); background: rgba(42,203,168,0.1); color: var(--teal); border: 1px solid rgba(42,203,168,0.2); border-radius: 20px; padding: 4px 12px; }
-  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 1.8s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.8)} }
-  .btn { font-family: var(--mono); font-size: 11px; background: transparent; border: 1px solid var(--border2); color: var(--text2); padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .2s; }
-  .btn:hover { border-color: var(--orange); color: var(--orange); }
-  .btn:disabled { opacity: .4; cursor: default; }
+/* ── layout ── */
+.shell { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
 
-  /* ── section label ── */
-  .section-lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
+/* ── header ── */
+.header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2.25rem; gap: 1rem; flex-wrap: wrap; }
+.logo-group { display: flex; align-items: center; gap: 14px; }
+.logo-mark { width: 40px; height: 40px; border-radius: 10px; background: var(--orange-dim); border: 1px solid rgba(240,98,42,0.3); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--orange); letter-spacing: -1px; flex-shrink: 0; }
+.header-left h1 { font-family: 'Inter', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.header-left p { font-size: 11px; color: var(--text2); margin-top: 4px; font-family: var(--mono); }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-family: var(--mono); background: rgba(40,201,165,0.08); color: var(--teal); border: 1px solid rgba(40,201,165,0.18); border-radius: 20px; padding: 5px 13px; }
+.live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: blink 1.8s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.btn { font-family: var(--mono); font-size: 10px; background: transparent; border: 1px solid var(--border2); color: var(--text2); padding: 6px 14px; border-radius: 7px; cursor: pointer; transition: all .15s; }
+.btn:hover { border-color: rgba(240,98,42,0.5); color: var(--orange); }
+.btn:disabled { opacity: .4; cursor: default; }
 
-  /* ── metric grid ── */
-  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
-  .metric { background: var(--bg2); padding: 1.25rem 1.5rem; }
-  .metric-lbl { font-size: 11px; color: var(--text3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); display: flex; align-items: center; gap: 6px; }
-  .metric-val { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; line-height: 1; color: var(--text); }
-  .metric-val.fire { color: var(--orange); }
-  .metric-val.teal { color: var(--teal); }
-  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
-  .icon-fire { color: var(--orange); }
-  .icon-teal { color: var(--teal); }
+/* ── section label ── */
+.section-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; }
 
-  /* ── two col ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  @media(max-width:680px){ .two-col { grid-template-columns: 1fr; } }
+/* ── hero banner ── */
+.hero { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem; position: relative; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(240,98,42,0.07) 0%, transparent 60%); pointer-events: none; }
+.hero-cell { padding: 1.5rem 2rem; }
+.hero-cell.center { text-align: center; }
+.hero-cell.right { text-align: right; }
+.hero-label { font-size: 10px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+.hero-val { font-family: 'Inter', sans-serif; font-size: 2.1rem; font-weight: 700; line-height: 1; letter-spacing: -0.03em; color: var(--orange); }
+.hero-val.teal { color: var(--teal); }
+.hero-val.white { color: var(--text); }
+.hero-note { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 5px; }
+.hero-sep { width: 1px; background: var(--border); align-self: stretch; }
 
-  /* ── card ── */
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; }
-  .card-title { font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-  .card-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-family: var(--mono); margin-left: auto; }
-  .badge-fire { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(232,99,42,0.25); }
-  .badge-teal { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(42,203,168,0.25); }
+/* ── metric grid ── */
+.metric-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
+@media(max-width:780px){ .metric-grid { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:480px){ .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+.metric { background: var(--bg2); padding: 1.1rem 1.25rem; transition: background .15s; }
+.metric:hover { background: var(--bg3); }
+.metric-lbl { font-size: 9px; color: var(--text3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .1em; font-family: var(--mono); }
+.metric-val { font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: var(--text); }
+.metric-val.fire { color: var(--orange); }
+.metric-val.teal { color: var(--teal); }
+.metric-sub { font-size: 9px; color: var(--text3); margin-top: 5px; font-family: var(--mono); }
 
-  /* ── stat rows ── */
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-key { color: var(--text2); }
-  .stat-val { font-family: var(--mono); font-size: 12px; color: var(--text); }
-  .stat-val.fire { color: var(--orange); }
-  .stat-val.teal { color: var(--teal); }
+/* ── flywheel ── */
+.flywheel-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.4rem; margin-bottom: 1.25rem; }
+.flywheel-title { font-size: 9px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 1rem; }
+.flywheel { display: flex; align-items: center; gap: 0; }
+.fw-node { flex: 1; padding: 12px 8px; text-align: center; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; font-size: 10px; color: var(--text2); line-height: 1.5; margin: 0 2px; font-family: 'Inter', sans-serif; }
+.fw-node strong { display: block; font-size: 11px; font-family: var(--mono); font-weight: 700; margin-bottom: 3px; color: var(--text); }
+.fw-node.fire { background: rgba(240,98,42,0.07); border-color: rgba(240,98,42,0.2); }
+.fw-node.fire strong { color: var(--orange); }
+.fw-node.teal { background: rgba(40,201,165,0.06); border-color: rgba(40,201,165,0.18); }
+.fw-node.teal strong { color: var(--teal); }
+.fw-arrow { color: var(--text3); font-family: var(--mono); font-size: 14px; padding: 0 6px; flex-shrink: 0; }
+.fw-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-bottom: 4px; animation: flow 2s ease-in-out infinite; }
+.fw-dot.fire { background: var(--orange); }
+.fw-dot.teal { background: var(--teal); animation-delay: .6s; }
+@keyframes flow { 0%,100%{opacity:.2;transform:scale(.7)} 50%{opacity:1;transform:scale(1)} }
 
-  /* ── progress ── */
-  .prog-wrap { margin-top: 14px; }
-  .prog-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 6px; }
-  .prog-track { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-  .prog-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
-  .prog-fill.fire { background: var(--orange); }
-  .prog-fill.teal { background: var(--teal); }
+/* ── two col ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:640px){ .two-col { grid-template-columns: 1fr; } }
 
-  /* ── flywheel ── */
-  .flywheel { display: flex; align-items: center; gap: 0; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); }
-  .fw-node { flex: 1; padding: 12px 8px; text-align: center; background: var(--bg3); font-size: 11px; color: var(--text2); line-height: 1.4; border-right: 1px solid var(--border); }
-  .fw-node:last-child { border-right: none; }
-  .fw-node.active-fire { background: var(--orange-glow); color: var(--orange); }
-  .fw-node.active-teal { background: var(--teal-dim); color: var(--teal); }
-  .fw-node strong { display: block; font-size: 12px; font-family: var(--mono); margin-bottom: 2px; }
-  .fw-arr { flex-shrink: 0; padding: 0 4px; font-size: 12px; color: var(--text3); }
+/* ── card ── */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.4rem; }
+.card-title { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.card-badge { font-size: 9px; padding: 2px 8px; border-radius: 4px; font-family: var(--mono); margin-left: auto; white-space: nowrap; }
+.badge-fire { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(240,98,42,0.22); }
+.badge-teal { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(40,201,165,0.22); }
 
-  /* ── wallet ── */
-  .wallet-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .wallet-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 12px; font-family: var(--mono); color: var(--text); outline: none; }
-  .wallet-row input:focus { border-color: var(--orange); }
-  .wallet-row input::placeholder { color: var(--text3); }
-  .btn-primary { background: var(--orange-dim); border-color: rgba(232,99,42,0.4); color: var(--orange); }
-  .btn-primary:hover { background: rgba(232,99,42,0.25); }
-  .err { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
-  .loading-dots span { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--text3); margin: 0 2px; animation: blink 1.2s infinite; }
-  .loading-dots span:nth-child(2){animation-delay:.2s} .loading-dots span:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+/* ── stat rows ── */
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-key { color: var(--text2); font-family: 'Inter', sans-serif; }
+.stat-val { font-family: var(--mono); font-size: 11px; color: var(--text); }
+.stat-val.fire { color: var(--orange); }
+.stat-val.teal { color: var(--teal); }
 
-  /* ── burn events ── */
-  .event-list { max-height: 260px; overflow-y: auto; }
-  .event-list::-webkit-scrollbar { width: 4px; }
-  .event-list::-webkit-scrollbar-track { background: var(--bg3); }
-  .event-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-  .event-row { display: grid; grid-template-columns: 1fr 1.4fr 70px; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12px; align-items: center; }
-  .event-row:last-child { border-bottom: none; }
-  .event-header { color: var(--text3); font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; }
-  .ev-fire { color: var(--orange); font-family: var(--mono); }
-  .ev-teal { color: var(--teal); font-family: var(--mono); }
-  .ev-time { color: var(--text3); font-family: var(--mono); font-size: 10px; text-align: right; }
-  .ev-tx { color: var(--text3); font-size: 10px; font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ev-tx a { color: var(--text2); text-decoration: none; }
-  .ev-tx a:hover { color: var(--orange); }
+/* ── progress ── */
+.prog-wrap { margin-top: 14px; }
+.prog-lbl { display: flex; justify-content: space-between; font-size: 9px; color: var(--text3); font-family: var(--mono); margin-bottom: 6px; }
+.prog-track { height: 3px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 2px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+.prog-fill.fire { background: linear-gradient(90deg, #c84a1a, var(--orange)); }
+.prog-fill.teal { background: linear-gradient(90deg, #1a9e7f, var(--teal)); }
 
-  /* ── chart ── */
-  .chart-tabs { display: flex; gap: 4px; margin-left: auto; }
-  .ctab { font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text3); transition: all .2s; }
-  .ctab.active { background: var(--orange-dim); color: var(--orange); border-color: rgba(232,99,42,0.4); }
-  #chart-wrap { position: relative; width: 100%; height: 200px; margin-top: 8px; }
+/* ── burn events ── */
+.event-list { max-height: 240px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--bg4) transparent; }
+.event-list::-webkit-scrollbar { width: 3px; }
+.event-list::-webkit-scrollbar-track { background: transparent; }
+.event-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.event-row { display: grid; grid-template-columns: 1.1fr 1.5fr 64px; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 11px; align-items: center; }
+.event-row:last-child { border-bottom: none; }
+.event-header { color: var(--text3); font-size: 9px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .09em; }
+.ev-fire { color: var(--orange); font-family: var(--mono); font-weight: 700; }
+.ev-teal { color: var(--teal); font-family: var(--mono); }
+.ev-time { color: var(--text3); font-family: var(--mono); font-size: 9px; text-align: right; }
+.ev-tx { color: var(--text3); font-size: 9px; }
+.ev-tx a { color: var(--text2); text-decoration: none; }
+.ev-tx a:hover { color: var(--orange); }
 
-  /* ── indexer status ── */
-  .indexer-bar { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--text3); font-family: var(--mono); padding: 8px 0 0; flex-wrap: wrap; }
-  .idx-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
-  .idx-dot.running { background: var(--orange); animation: pulse 1.5s infinite; }
-  .idx-dot.done { background: var(--teal); }
+/* ── chart ── */
+.chart-tabs { display: flex; gap: 3px; margin-left: auto; }
+.ctab { font-family: var(--mono); font-size: 9px; padding: 3px 10px; border-radius: 5px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text3); transition: all .15s; }
+.ctab.active-fire { background: var(--orange-dim); color: var(--orange); border-color: rgba(240,98,42,0.35); }
+.ctab.active-teal { background: var(--teal-dim); color: var(--teal); border-color: rgba(40,201,165,0.3); }
+.chart-legend { display: flex; gap: 16px; font-size: 9px; color: var(--text2); font-family: var(--mono); margin-bottom: 8px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 5px; }
+#chart-wrap { position: relative; width: 100%; height: 200px; margin-top: 4px; }
 
-  /* ── totals banner ── */
-  .totals-banner { background: var(--orange-glow); border: 1px solid rgba(232,99,42,0.2); border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
-  .totals-banner .big { font-family: var(--mono); font-size: 2rem; font-weight: 700; color: var(--orange); }
-  .totals-banner .lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .totals-banner .sep { width: 1px; height: 40px; background: var(--border); }
+/* ── indexer ── */
+.indexer-bar { display: flex; align-items: center; gap: 7px; font-size: 9px; color: var(--text3); font-family: var(--mono); }
+.idx-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.idx-dot.running { background: var(--orange); animation: blink 1.5s infinite; }
+.idx-dot.done { background: var(--teal); animation: none; }
+
+/* ── wallet ── */
+.wallet-sub { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 14px; margin-top: -6px; }
+.wallet-input-wrap { display: flex; gap: 8px; margin-bottom: 8px; }
+.wallet-input-wrap input { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; font-size: 11px; font-family: var(--mono); color: var(--text); outline: none; transition: border-color .15s; }
+.wallet-input-wrap input:focus { border-color: rgba(240,98,42,0.45); }
+.wallet-input-wrap input::placeholder { color: var(--text3); }
+.btn-primary { background: var(--orange-dim); border-color: rgba(240,98,42,0.4); color: var(--orange); }
+.btn-primary:hover { background: rgba(240,98,42,0.2); }
+.err { font-size: 10px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
+
+/* wallet result */
+.total-rewards-block { background: rgba(40,201,165,0.06); border: 1px solid rgba(40,201,165,0.15); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
+.total-rewards-label { font-size: 9px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 6px; }
+.total-rewards-val { font-family: 'Inter', sans-serif; font-size: 1.9rem; font-weight: 700; letter-spacing: -0.03em; color: var(--teal); line-height: 1; }
+.total-rewards-unit { font-size: 10px; color: var(--text2); font-family: var(--mono); margin-top: 4px; }
+
+/* loading dots */
+.loading-dots span { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--text3); margin: 0 2px; animation: blink 1.2s infinite; }
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
 </style>
 </head>
 <body>
+<!-- PRICE BAR -->
+<div class="price-bar">
+  <div class="price-bar-inner">
+    <div class="price-token" id="price-ibb">
+      <div>
+        <div class="price-token-symbol">IBB</div>
+        <div class="price-token-usd" id="ibb-price">—</div>
+      </div>
+      <div>
+        <div class="price-token-change" id="ibb-change">—</div>
+        <div class="price-token-vol" id="ibb-vol">Vol —</div>
+      </div>
+    </div>
+    <div class="price-token" id="price-icb">
+      <div>
+        <div class="price-token-symbol">ICB</div>
+        <div class="price-token-usd" id="icb-price">—</div>
+      </div>
+      <div>
+        <div class="price-token-change" id="icb-change">—</div>
+        <div class="price-token-vol" id="icb-vol">Vol —</div>
+      </div>
+    </div>
+    <div class="price-updated">
+      <div class="price-dot pulsing" id="price-dot"></div>
+      <span id="price-status">Fetching prices…</span>
+    </div>
+  </div>
+</div>
 <div class="shell">
 
-  <!-- header -->
+  <!-- HEADER -->
   <div class="header">
-    <div class="header-left">
-      <h1>IBB · ICB Dashboard</h1>
-      <p>I Burn Buttons — live rewards & burn tracker on PulseChain</p>
+    <div class="logo-group">
+      <div class="logo-mark">IBB</div>
+      <div class="header-left">
+        <h1>IBB · ICB Dashboard</h1>
+        <p>I Burn Buttons — live rewards & burn tracker on PulseChain</p>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div class="header-right">
       <span class="live-pill"><span class="live-dot"></span>PulseChain live</span>
       <button class="btn" id="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
     </div>
   </div>
 
-  <!-- burn totals banner (populated by indexer) -->
-  <div class="totals-banner" id="totals-banner">
-    <div>
-      <div class="big" id="banner-icb">—</div>
-      <div class="lbl">Total ICB burned to 0xdead (indexed)</div>
+  <!-- HERO BANNER -->
+  <div class="hero">
+    <div class="hero-cell">
+      <div class="hero-label">Total ICB burned</div>
+      <div class="hero-val" id="banner-icb">—</div>
+      <div class="hero-note">to 0xdead · indexed</div>
     </div>
-    <div class="sep"></div>
-    <div>
-      <div class="big" id="banner-pls" style="color:var(--teal)">—</div>
-      <div class="lbl">Total PLS spent on burns</div>
+    <div class="hero-sep"></div>
+    <div class="hero-cell center">
+      <div class="hero-label">PLS spent on burns</div>
+      <div class="hero-val teal" id="banner-pls">—</div>
+      <div class="hero-note">total PLS deployed</div>
     </div>
-    <div class="sep"></div>
-    <div>
-      <div class="big" id="banner-events" style="font-size:1.5rem">—</div>
-      <div class="lbl">Burn events indexed</div>
+    <div class="hero-sep"></div>
+    <div class="hero-cell right">
+      <div class="hero-label">Burn events</div>
+      <div class="hero-val white" id="banner-events">—</div>
+      <div class="hero-note">since deploy</div>
     </div>
   </div>
 
-  <!-- overview metrics -->
+  <!-- METRICS -->
   <div class="section-lbl">Protocol overview</div>
   <div class="metric-grid">
     <div class="metric">
-      <div class="metric-lbl"><span class="icon-fire">🔥</span> ICB Burned</div>
+      <div class="metric-lbl">ICB Burned</div>
       <div class="metric-val fire" id="m-burned">—</div>
       <div class="metric-sub">lifetime to 0xdead</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl"><span>👥</span> Holders</div>
+      <div class="metric-lbl">Holders</div>
       <div class="metric-val" id="m-holders">—</div>
       <div class="metric-sub">earning PLS rewards</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl"><span class="icon-teal">💧</span> PLS Pooled</div>
+      <div class="metric-lbl">PLS Pooled</div>
       <div class="metric-val teal" id="m-rewards">—</div>
       <div class="metric-sub">total rewards deposited</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl"><span>✅</span> Rewards Paid</div>
+      <div class="metric-lbl">Rewards Paid</div>
       <div class="metric-val" id="m-paid">—</div>
       <div class="metric-sub">distributed to holders</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl"><span class="icon-fire">⏳</span> Pending Burn</div>
+      <div class="metric-lbl">Pending Burn</div>
       <div class="metric-val fire" id="m-pending-burn">—</div>
-      <div class="metric-sub">queued PLS for ICB buy</div>
+      <div class="metric-sub">queued for ICB buy</div>
     </div>
     <div class="metric">
-      <div class="metric-lbl"><span class="icon-teal">⏳</span> Pending Rewards</div>
+      <div class="metric-lbl">Pending Rewards</div>
       <div class="metric-val teal" id="m-pending-rewards">—</div>
-      <div class="metric-sub">queued PLS for deposit</div>
+      <div class="metric-sub">queued for deposit</div>
     </div>
   </div>
 
-  <!-- flywheel -->
-  <div class="card" style="margin-bottom:1rem;">
-    <div class="card-title">The 8% burn flywheel</div>
+  <!-- FLYWHEEL -->
+  <div class="flywheel-card">
+    <div class="flywheel-title">The 8% burn flywheel</div>
     <div class="flywheel">
-      <div class="fw-node"><strong>IBB Txn</strong>8% tax taken</div>
-      <div class="fw-arr">→</div>
-      <div class="fw-node"><strong>Swap IBB→PLS</strong>via PulseX</div>
-      <div class="fw-arr">→</div>
-      <div class="fw-node active-fire"><strong>Buy & Burn ICB</strong>3% → 0xdead</div>
-      <div class="fw-arr">→</div>
-      <div class="fw-node active-teal"><strong>PLS Rewards</strong>5% to holders</div>
+      <div class="fw-node">
+        <strong>IBB Txn</strong>
+        8% tax taken
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-node">
+        <strong>Swap IBB→PLS</strong>
+        via PulseX
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-node fire">
+        <span class="fw-dot fire"></span>
+        <strong>Buy & Burn ICB</strong>
+        3% → 0xdead
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-node teal">
+        <span class="fw-dot teal"></span>
+        <strong>PLS Rewards</strong>
+        5% to holders
+      </div>
     </div>
   </div>
 
-  <!-- burn card + rewards card -->
+  <!-- BURN + REWARDS CARDS -->
   <div class="two-col">
     <div class="card">
       <div class="card-title">Burn stats <span class="card-badge badge-fire">3% of tax</span></div>
@@ -249,7 +345,7 @@
     </div>
   </div>
 
-  <!-- burn event log -->
+  <!-- BURN EVENT LOG -->
   <div class="card" style="margin-bottom:1rem;">
     <div class="card-title">
       Burn event log
@@ -259,73 +355,80 @@
       </div>
     </div>
     <div class="event-row event-header">
-      <span>ICB Burned</span><span>PLS Spent</span><span style="text-align:right">Age</span>
+      <span>ICB Burned</span>
+      <span>PLS Spent · TX</span>
+      <span style="text-align:right">Age</span>
     </div>
     <div class="event-list" id="event-list">
-      <div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px;padding:2rem 0">
+      <div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;padding:2rem 0;">
         Indexer not started — click Refresh
       </div>
     </div>
   </div>
 
-  <!-- chart -->
+  <!-- CHART -->
   <div class="card" style="margin-bottom:1rem;">
     <div class="card-title">
       Burn history
       <div class="chart-tabs">
-        <button class="ctab active" id="ctab-burn" onclick="switchChart('burn')">Burns</button>
+        <button class="ctab active-fire" id="ctab-burn" onclick="switchChart('burn')">Burns</button>
         <button class="ctab" id="ctab-rewards" onclick="switchChart('rewards')">Rewards</button>
       </div>
     </div>
-    <div id="chart-wrap">
-      <canvas id="mainChart" role="img" aria-label="IBB burn and reward history chart">Historical burn and reward data indexed from PulseChain.</canvas>
+    <div class="chart-legend" id="chart-legend">
+      <span><span class="legend-dot" style="background:#f0622a;"></span>ICB burned (demo)</span>
     </div>
-    <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:8px;text-align:right;">Data sourced from on-chain BuyAndBurn events</div>
+    <div id="chart-wrap">
+      <canvas id="mainChart" role="img" aria-label="Bar chart of daily IBB burn and reward history">Historical burn and reward data indexed from PulseChain.</canvas>
+    </div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:8px;text-align:right;">Data sourced from on-chain BuyAndBurn events</div>
   </div>
 
-  <!-- wallet lookup -->
+  <!-- WALLET -->
   <div class="card">
     <div class="card-title">My wallet</div>
-    <div class="wallet-row">
+    <div class="wallet-sub">Rewards auto-claim every ~30s — total earned is what matters</div>
+    <div class="wallet-input-wrap">
       <input type="text" id="wallet-addr" placeholder="0x… your wallet address" />
-      <button class="btn btn-primary" onclick="lookupWallet()">Check →</button>
+      <button class="btn btn-primary" id="wallet-btn" onclick="lookupWallet()">Check →</button>
     </div>
     <div id="wallet-loading" style="display:none;padding:8px 0;" class="loading-dots">
       <span></span><span></span><span></span>
     </div>
     <div id="wallet-error" class="err"></div>
     <div id="wallet-result" style="display:none;">
-      <div class="stat-row"><span class="stat-key">Next claim in</span><span class="stat-val" id="w-claim-time">—</span></div>
-      <div class="stat-row"><span class="stat-key">Unclaimed PLS</span><span class="stat-val teal" id="w-unpaid">—</span></div>
-      <div class="stat-row"><span class="stat-key">Total claimed</span><span class="stat-val" id="w-paid">—</span></div>
+      <div class="total-rewards-block">
+        <div class="total-rewards-label">Total rewards earned</div>
+        <div class="total-rewards-val" id="w-total">—</div>
+        <div class="total-rewards-unit">PLS · all time</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Total claimed</span>
+        <span class="stat-val teal" id="w-paid">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Pending (auto-claims ~30s)</span>
+        <span class="stat-val" id="w-unpaid">—</span>
+      </div>
     </div>
   </div>
 
-</div>
+</div><!-- /shell -->
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-// CONFIG — REPLACE IBB_ADDRESS WITH YOUR DEPLOYED CONTRACT
+// CONFIG
 // ═══════════════════════════════════════════════════════════════════
 const CONFIG = {
-  IBB_ADDRESS:   "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E",
-  RPC:           "https://rpc.pulsechain.com",
-  EXPLORER:      "https://scan.pulsechain.com",
-  DEPLOY_BLOCK:  0,          // auto-detected on first load via BlockScout API,   // replace with actual deploy block
-  CHUNK_SIZE:    2000,       // blocks per eth_getLogs batch
-  MAX_EVENTS:    500,        // cap history
+  IBB_ADDRESS:  "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E",
+  RPC:          "https://rpc.pulsechain.com",
+  EXPLORER:     "https://scan.pulsechain.com",
+  DEPLOY_BLOCK: 0,
+  CHUNK_SIZE:   2000,
+  MAX_EVENTS:   500,
 };
 
-// BuyAndBurn(uint256 plsSpent, uint256 icbBurned)
-const BUY_AND_BURN_TOPIC = "0x" + keccak256str("BuyAndBurn(uint256,uint256)");
-
-// ═══════════════════════════════════════════════════════════════════
-// EVENT TOPICS (precomputed keccak256 of event signatures)
-// ═══════════════════════════════════════════════════════════════════
-// BuyAndBurn(uint256,uint256)  → 0x3dcdee83...
-// BurnFailed(uint256)          → 0x9cf69db4...
-// DepositFailed(uint256)       → 0x6ff4355c...
-// TradingLaunched(uint256,uint256) → 0x7b785d45...
+const BURN_EVENT_TOPIC0 = "0x3dcdee83a97284b298a1d5197ac6adf342aa15c061ded0d9318e9b7bf6879cd2";
 
 // ═══════════════════════════════════════════════════════════════════
 // RPC HELPERS
@@ -341,91 +444,53 @@ async function rpc(method, params = []) {
   if (d.error) throw new Error(d.error.message);
   return d.result;
 }
-
-async function getBlockNumber() {
-  const hex = await rpc("eth_blockNumber");
-  return parseInt(hex, 16);
-}
-
+async function getBlockNumber() { return parseInt(await rpc("eth_blockNumber"), 16); }
 async function getLogs(fromBlock, toBlock, address, topic) {
   return rpc("eth_getLogs", [{
     fromBlock: "0x" + fromBlock.toString(16),
     toBlock:   "0x" + toBlock.toString(16),
-    address,
-    topics: [topic]
+    address, topics: [topic]
   }]);
 }
-
-async function ethCall(to, data) {
-  return rpc("eth_call", [{ to, data }, "latest"]);
-}
+async function ethCall(to, data) { return rpc("eth_call", [{ to, data }, "latest"]); }
 
 // ═══════════════════════════════════════════════════════════════════
-// ABI ENCODING / DECODING HELPERS
+// ABI / ENCODING HELPERS
 // ═══════════════════════════════════════════════════════════════════
-function sel(sig) {
-  // Precomputed selectors for IBB contract functions
-  const SELS = {
-    "getPoolStatistics()":         "0xe8a3d485",
-    "pendingBurnPLS()":            "0x48a5e7e7",
-    "pendingRewardsPLS()":         "0x6f89db1f",
-    "myStatistics(address)":       "0x6a44a520",
-    "checkClaimTime(address)":     "0x4b64e492",
-  };
-  return SELS[sig] || "0x00000000";
-}
-
-function padAddr(addr) {
-  return "000000000000000000000000" + addr.replace("0x","").toLowerCase();
-}
-
+function padAddr(addr) { return "000000000000000000000000" + addr.replace("0x","").toLowerCase(); }
 function decodeUint(hex, offset = 0) {
   const h = hex.startsWith("0x") ? hex.slice(2) : hex;
   return BigInt("0x" + h.slice(offset * 64, offset * 64 + 64));
 }
-
 function toEth(wei) { return Number(wei) / 1e18; }
-
 function fmt(n, dp = 2) {
   if (n === null || n === undefined || isNaN(n)) return "—";
   const abs = Math.abs(n);
-  if (abs >= 1e9)  return (n / 1e9).toFixed(dp) + "B";
-  if (abs >= 1e6)  return (n / 1e6).toFixed(dp) + "M";
-  if (abs >= 1e3)  return (n / 1e3).toFixed(dp) + "K";
+  if (abs >= 1e9) return (n / 1e9).toFixed(dp) + "B";
+  if (abs >= 1e6) return (n / 1e6).toFixed(dp) + "M";
+  if (abs >= 1e3) return (n / 1e3).toFixed(dp) + "K";
   return n.toFixed(dp);
 }
-
 function fmtPLS(wei) { return fmt(toEth(wei)) + " PLS"; }
 function ago(blockNum, currentBlock, blockTime = 3) {
   const secs = (currentBlock - blockNum) * blockTime;
-  if (secs < 60)   return secs + "s ago";
-  if (secs < 3600) return Math.floor(secs / 60) + "m ago";
+  if (secs < 60)    return secs + "s ago";
+  if (secs < 3600)  return Math.floor(secs / 60) + "m ago";
   if (secs < 86400) return Math.floor(secs / 3600) + "h ago";
   return Math.floor(secs / 86400) + "d ago";
 }
-
 function setEl(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
 
 // ═══════════════════════════════════════════════════════════════════
 // BURN EVENT INDEXER
 // ═══════════════════════════════════════════════════════════════════
 const indexerState = {
-  events: [],       // { blockNumber, txHash, plsPLS, icbAmount }
+  events: [],
   totalPLS: 0n,
   totalICB: 0n,
   lastIndexedBlock: 0,
   running: false,
 };
-
-// Real keccak256 of BuyAndBurn(uint256,uint256)
-// Computed offline: 0x6b621e...  but we detect it by trying getLogs;
-// if you don't know the exact topic, use null to fetch all logs then filter.
-// For this dashboard we'll use eth_getLogs with the contract address
-// and parse all logs that match the event signature data structure.
-const BURN_EVENT_TOPIC0 = "0x3dcdee83a97284b298a1d5197ac6adf342aa15c061ded0d9318e9b7bf6879cd2"; // keccak256("BuyAndBurn(uint256,uint256)")
-// NOTE: Replace the above with the actual keccak256("BuyAndBurn(uint256,uint256)")
-// You can get it from: web3.utils.keccak256("BuyAndBurn(uint256,uint256)")
-// or cast sig "BuyAndBurn(uint256,uint256)" on any EVM toolkit.
 
 async function detectDeployBlock() {
   if (CONFIG.DEPLOY_BLOCK > 0) return CONFIG.DEPLOY_BLOCK;
@@ -434,16 +499,11 @@ async function detectDeployBlock() {
     const resp = await fetch(url);
     const data = await resp.json();
     if (data.status === "1" && data.result && data.result.length > 0) {
-      const deployBlock = parseInt(data.result[0].blockNumber);
-      CONFIG.DEPLOY_BLOCK = deployBlock;
-      console.log("Deploy block auto-detected:", deployBlock);
-      setEl("idx-status", `Deploy block detected: #${deployBlock.toLocaleString()}`);
-      return deployBlock;
+      CONFIG.DEPLOY_BLOCK = parseInt(data.result[0].blockNumber);
+      setEl("idx-status", `Deploy block detected: #${CONFIG.DEPLOY_BLOCK.toLocaleString()}`);
+      return CONFIG.DEPLOY_BLOCK;
     }
-  } catch(e) {
-    console.warn("Could not auto-detect deploy block:", e.message);
-  }
-  // Fallback: use a reasonable recent block if API fails
+  } catch(e) { console.warn("Could not auto-detect deploy block:", e.message); }
   CONFIG.DEPLOY_BLOCK = 21000000;
   return CONFIG.DEPLOY_BLOCK;
 }
@@ -451,15 +511,13 @@ async function detectDeployBlock() {
 async function runIndexer() {
   if (indexerState.running) return;
   indexerState.running = true;
-
-  const dot = document.getElementById("idx-dot");
+  const dot    = document.getElementById("idx-dot");
   const status = document.getElementById("idx-status");
   dot.className = "idx-dot running";
 
   try {
     const currentBlock = await getBlockNumber();
 
-    // Auto-detect deploy block if not set
     if (CONFIG.DEPLOY_BLOCK === 0) {
       setEl("idx-status", "Detecting deploy block…");
       await detectDeployBlock();
@@ -471,7 +529,7 @@ async function runIndexer() {
 
     if (fromBlock > currentBlock) {
       dot.className = "idx-dot done";
-      status.textContent = "Up to date — block #" + currentBlock.toLocaleString();
+      status.textContent = "Up to date · block #" + currentBlock.toLocaleString();
       indexerState.running = false;
       return;
     }
@@ -481,45 +539,36 @@ async function runIndexer() {
     let chunk = fromBlock;
 
     while (chunk <= currentBlock) {
-      const to = Math.min(chunk + CONFIG.CHUNK_SIZE - 1, currentBlock);
+      const to  = Math.min(chunk + CONFIG.CHUNK_SIZE - 1, currentBlock);
       const pct = Math.min(100, Math.round((scanned / totalBlocks) * 100));
 
-      setEl("idx-status", `Indexing blocks ${chunk.toLocaleString()}–${to.toLocaleString()} (${pct}%)`);
-      setEl("burn-idx-pct", pct + "%");
+      setEl("idx-status",    `Indexing ${chunk.toLocaleString()}–${to.toLocaleString()} (${pct}%)`);
+      setEl("burn-idx-pct",  pct + "%");
       document.getElementById("burn-idx-bar").style.width = pct + "%";
 
       try {
-        // Fetch logs — topic0 is the event signature hash
         const logs = await getLogs(chunk, to, CONFIG.IBB_ADDRESS, BURN_EVENT_TOPIC0);
-
         for (const log of (logs || [])) {
-          // BuyAndBurn emits: plsSpent (topic or data[0]), icbBurned (data[1])
-          // Both are non-indexed so they're in log.data
           if (!log.data || log.data.length < 130) continue;
-          const plsBig  = decodeUint(log.data, 0);
-          const icbBig  = decodeUint(log.data, 1);
-
-          // Deduplicate by tx hash
+          const plsBig = decodeUint(log.data, 0);
+          const icbBig = decodeUint(log.data, 1);
           if (!indexerState.events.find(e => e.txHash === log.transactionHash)) {
             indexerState.events.push({
               blockNumber: parseInt(log.blockNumber, 16),
-              txHash:      log.transactionHash,
-              pls:         plsBig,
-              icb:         icbBig,
+              txHash: log.transactionHash,
+              pls: plsBig,
+              icb: icbBig,
             });
             indexerState.totalPLS += plsBig;
             indexerState.totalICB += icbBig;
           }
         }
-      } catch (chunkErr) {
-        // Chunk too large or rate limit — try smaller chunks
+      } catch(chunkErr) {
         console.warn("Chunk error, skipping:", chunk, chunkErr.message);
       }
 
       scanned += (to - chunk + 1);
       chunk = to + 1;
-
-      // Yield to UI thread
       await new Promise(r => setTimeout(r, 50));
     }
 
@@ -529,58 +578,49 @@ async function runIndexer() {
     setEl("burn-idx-pct", "100%");
     document.getElementById("burn-idx-bar").style.width = "100%";
 
-    // Sort newest first
     indexerState.events.sort((a, b) => b.blockNumber - a.blockNumber);
-
     updateBurnUI(currentBlock);
     updateBurnChart();
 
-  } catch (err) {
+  } catch(err) {
     dot.className = "idx-dot";
     status.textContent = "Error: " + err.message;
     console.error(err);
   }
-
   indexerState.running = false;
 }
 
 function updateBurnUI(currentBlock) {
   const { events, totalPLS, totalICB } = indexerState;
-
   const totalICBFmt = fmt(toEth(totalICB));
   const totalPLSFmt = fmt(toEth(totalPLS));
 
-  // Banner
   setEl("banner-icb",    totalICBFmt + " ICB");
   setEl("banner-pls",    totalPLSFmt + " PLS");
   setEl("banner-events", events.length.toString());
 
-  // Metrics
-  setEl("m-burned",     totalICBFmt + " ICB");
-  setEl("s-icb-total",  totalICBFmt + " ICB");
-  setEl("s-pls-spent",  totalPLSFmt + " PLS");
+  setEl("m-burned",      totalICBFmt + " ICB");
+  setEl("s-icb-total",   totalICBFmt + " ICB");
+  setEl("s-pls-spent",   totalPLSFmt + " PLS");
   setEl("s-burn-events", events.length.toString());
 
-  // Event log
   const list = document.getElementById("event-list");
   if (events.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px;padding:2rem 0">No BuyAndBurn events found yet</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;padding:2rem 0;">No BuyAndBurn events found yet</div>';
     return;
   }
 
-  const rows = events.slice(0, CONFIG.MAX_EVENTS).map(ev => {
-    const txShort = ev.txHash.slice(0, 6) + "…" + ev.txHash.slice(-4);
+  list.innerHTML = events.slice(0, CONFIG.MAX_EVENTS).map(ev => {
+    const txShort = ev.txHash.slice(0,6) + "…" + ev.txHash.slice(-4);
+    const txUrl   = CONFIG.EXPLORER + "/tx/" + ev.txHash;
     const timeStr = currentBlock ? ago(ev.blockNumber, currentBlock) : "—";
-    const txUrl   = "https://scan.pulsechain.com/tx/" + ev.txHash;
     return `
-      <div class="event-row">
-        <span class="ev-fire">${fmt(toEth(ev.icb), 0)} ICB</span>
-        <span class="ev-teal">${fmt(toEth(ev.pls), 4)} PLS &nbsp;<a href="${txUrl}" target="_blank" rel="noopener" style="color:var(--text3);text-decoration:none;font-size:10px;">${txShort} ↗</a></span>
-        <span class="ev-time">${timeStr}</span>
-      </div>`;
+    <div class="event-row">
+      <span class="ev-fire">${fmt(toEth(ev.icb), 0)} ICB</span>
+      <span class="ev-teal">${fmt(toEth(ev.pls), 4)} PLS &nbsp;<span class="ev-tx"><a href="${txUrl}" target="_blank" rel="noopener">${txShort} ↗</a></span></span>
+      <span class="ev-time">${timeStr}</span>
+    </div>`;
   }).join("");
-
-  list.innerHTML = rows;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -588,30 +628,29 @@ function updateBurnUI(currentBlock) {
 // ═══════════════════════════════════════════════════════════════════
 async function loadPoolStats() {
   try {
-    const res = await ethCall(CONFIG.IBB_ADDRESS, sel("getPoolStatistics()"));
+    const res = await ethCall(CONFIG.IBB_ADDRESS, "0xe8a3d485");
     if (!res || res.length < 10) return;
     const totalRewards = decodeUint(res, 0);
     const totalPaid    = decodeUint(res, 1);
     const holders      = decodeUint(res, 2);
-
     const rewF  = toEth(totalRewards);
     const paidF = toEth(totalPaid);
     const pct   = rewF > 0 ? Math.round((paidF / rewF) * 100) : 0;
 
-    setEl("m-holders",   holders.toString());
-    setEl("m-rewards",   fmt(rewF) + " PLS");
-    setEl("m-paid",      fmt(paidF) + " PLS");
+    setEl("m-holders",    holders.toString());
+    setEl("m-rewards",    fmt(rewF) + " PLS");
+    setEl("m-paid",       fmt(paidF) + " PLS");
     setEl("s-total-div",  fmt(rewF) + " PLS");
     setEl("s-total-dist", fmt(paidF) + " PLS");
     setEl("s-holders",    holders.toString());
-    setEl("reward-pct",  pct + "%");
+    setEl("reward-pct",   pct + "%");
     document.getElementById("reward-bar").style.width = Math.min(pct, 100) + "%";
   } catch(e) { console.warn("getPoolStatistics error:", e); }
 }
 
 async function loadPendingAmounts() {
   try {
-    const burnRes = await ethCall(CONFIG.IBB_ADDRESS, sel("pendingBurnPLS()"));
+    const burnRes = await ethCall(CONFIG.IBB_ADDRESS, "0x48a5e7e7");
     if (burnRes && burnRes.length > 10) {
       const v = fmt(toEth(decodeUint(burnRes, 0))) + " PLS";
       setEl("m-pending-burn",  v);
@@ -619,7 +658,7 @@ async function loadPendingAmounts() {
     }
   } catch(e) {}
   try {
-    const rewRes = await ethCall(CONFIG.IBB_ADDRESS, sel("pendingRewardsPLS()"));
+    const rewRes = await ethCall(CONFIG.IBB_ADDRESS, "0x6f89db1f");
     if (rewRes && rewRes.length > 10) {
       const v = fmt(toEth(decodeUint(rewRes, 0))) + " PLS";
       setEl("m-pending-rewards", v);
@@ -632,7 +671,7 @@ async function loadPendingAmounts() {
 // WALLET LOOKUP
 // ═══════════════════════════════════════════════════════════════════
 async function lookupWallet() {
-  const addr = document.getElementById("wallet-addr").value.trim();
+  const addr  = document.getElementById("wallet-addr").value.trim();
   const errEl = document.getElementById("wallet-error");
   const resEl = document.getElementById("wallet-result");
   const ldgEl = document.getElementById("wallet-loading");
@@ -646,20 +685,15 @@ async function lookupWallet() {
   ldgEl.style.display = "block";
 
   const padded = padAddr(addr);
-
   try {
-    const statsRes = await ethCall(CONFIG.IBB_ADDRESS, sel("myStatistics(address)") + padded);
-    const claimRes = await ethCall(CONFIG.IBB_ADDRESS, sel("checkClaimTime(address)") + padded);
-
+    const statsRes = await ethCall(CONFIG.IBB_ADDRESS, "0x6a44a520" + padded);
     if (statsRes && statsRes.length > 10) {
       const unpaid = toEth(decodeUint(statsRes, 0));
       const paid   = toEth(decodeUint(statsRes, 1));
+      const total  = unpaid + paid;
+      setEl("w-total",  fmt(total,  4) + " PLS");
+      setEl("w-paid",   fmt(paid,   4) + " PLS");
       setEl("w-unpaid", fmt(unpaid, 4) + " PLS");
-      setEl("w-paid",   fmt(paid, 4) + " PLS");
-    }
-    if (claimRes && claimRes.length > 10) {
-      const secs = Number(decodeUint(claimRes, 0));
-      setEl("w-claim-time", secs === 0 ? "Ready now!" : Math.ceil(secs / 60) + " min");
     }
     resEl.style.display = "block";
   } catch(e) {
@@ -669,18 +703,21 @@ async function lookupWallet() {
   }
 }
 
+document.getElementById("wallet-addr").addEventListener("keydown", e => {
+  if (e.key === "Enter") lookupWallet();
+});
+
 // ═══════════════════════════════════════════════════════════════════
 // CHART
 // ═══════════════════════════════════════════════════════════════════
 let activeChart = null;
-let chartMode = "burn";
+let chartMode   = "burn";
 
 function buildChartData() {
-  const events = [...indexerState.events].reverse(); // oldest first
+  const events = [...indexerState.events].reverse();
   if (events.length === 0) return { labels: [], burnData: [], rewardData: [] };
 
-  // Group by day bucket (approximate from block number)
-  const BLOCKS_PER_DAY = 28800; // ~3s per block on PulseChain
+  const BLOCKS_PER_DAY = 28800;
   const buckets = {};
   for (const ev of events) {
     const day = Math.floor(ev.blockNumber / BLOCKS_PER_DAY);
@@ -688,10 +725,10 @@ function buildChartData() {
     buckets[day].icb += ev.icb;
     buckets[day].pls += ev.pls;
   }
-  const days = Object.keys(buckets).sort((a,b) => a-b).slice(-14); // last 14 days
-  const labels    = days.map((d, i) => "Day " + (i + 1));
+  const days      = Object.keys(buckets).sort((a,b) => a-b).slice(-14);
+  const labels    = days.map((_, i) => "Day " + (i + 1));
   const burnData  = days.map(d => parseFloat(toEth(buckets[d].icb).toFixed(2)));
-  const rewardData = days.map(d => parseFloat(toEth(buckets[d].pls).toFixed(4)));
+  const rewardData= days.map(d => parseFloat(toEth(buckets[d].pls).toFixed(4)));
   return { labels, burnData, rewardData };
 }
 
@@ -700,29 +737,35 @@ function updateBurnChart() {
   const isBurn = chartMode === "burn";
   const data   = isBurn ? burnData : rewardData;
 
-  // Fallback demo data if no events yet
-  const demoLabels = ["D1","D2","D3","D4","D5","D6","D7"];
-  const demoBurn   = [12400, 18700, 9800, 24100, 31600, 19200, 27800];
-  const demoRew    = [20600, 31200, 16300, 40200, 52700, 32000, 46300];
+  const demoLabels  = ["D1","D2","D3","D4","D5","D6","D7","D8","D9","D10","D11","D12","D13","D14"];
+  const demoBurn    = [124,187,98,241,316,192,278,155,302,418,211,339,176,287];
+  const demoRewards = [207,312,163,402,527,320,463,258,503,697,352,565,293,478];
+  const isDemo      = labels.length === 0;
 
-  const useLabels = labels.length > 0 ? labels : demoLabels;
-  const useData   = data.length > 0 ? data : (isBurn ? demoBurn : demoRew);
-  const isDemo    = labels.length === 0;
+  const useLabels = isDemo ? demoLabels : labels;
+  const useData   = isDemo ? (isBurn ? demoBurn : demoRewards) : data;
+
+  const color    = isBurn ? "#f0622a" : "#28c9a5";
+  const colorDim = isBurn ? "rgba(240,98,42,0.18)" : "rgba(40,201,165,0.15)";
+  const unit     = isBurn ? (isDemo ? "K ICB" : " ICB") : (isDemo ? "K PLS" : " PLS");
+
+  document.getElementById("chart-legend").innerHTML =
+    `<span><span class="legend-dot" style="background:${color};"></span>${isBurn ? "ICB burned" : "PLS rewarded"}${isDemo ? " (demo)" : ""}</span>`;
 
   if (activeChart) activeChart.destroy();
   const ctx = document.getElementById("mainChart").getContext("2d");
-
   activeChart = new Chart(ctx, {
     type: "bar",
     data: {
       labels: useLabels,
       datasets: [{
         label: isBurn ? "ICB burned" : "PLS rewarded",
-        data: useData,
-        backgroundColor: isBurn ? "rgba(232,99,42,0.5)" : "rgba(42,203,168,0.4)",
-        borderColor:     isBurn ? "#e8632a"             : "#2acba8",
-        borderWidth: 1,
-        borderRadius: 3,
+        data:  useData,
+        backgroundColor:      colorDim,
+        borderColor:          color,
+        borderWidth:          1.5,
+        borderRadius:         4,
+        hoverBackgroundColor: isBurn ? "rgba(240,98,42,0.35)" : "rgba(40,201,165,0.3)",
       }]
     },
     options: {
@@ -730,19 +773,27 @@ function updateBurnChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "#17171a",
-          borderColor: "#333",
-          borderWidth: 1,
-          titleColor: "#8a8880",
-          bodyColor: isBurn ? "#e8632a" : "#2acba8",
-          callbacks: {
-            label: ctx => fmt(ctx.parsed.y) + (isBurn ? " ICB" : " PLS") + (isDemo ? " (demo)" : "")
-          }
+          backgroundColor: "#141416",
+          borderColor:     "rgba(255,255,255,0.08)",
+          borderWidth:     1,
+          titleColor:      "#7a7875",
+          bodyColor:       color,
+          titleFont: { family: "'Space Mono', monospace", size: 10 },
+          bodyFont:  { family: "'Space Mono', monospace", size: 11 },
+          callbacks: { label: ctx => ctx.parsed.y + unit }
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: "#55534f", font: { size: 10 } } },
-        y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#55534f", font: { size: 10 }, callback: v => fmt(v) } }
+        x: {
+          grid:   { display: false },
+          border: { display: false },
+          ticks:  { color: "#454340", font: { size: 9, family: "'Space Mono', monospace" } }
+        },
+        y: {
+          grid:   { color: "rgba(255,255,255,0.04)" },
+          border: { display: false },
+          ticks:  { color: "#454340", font: { size: 9, family: "'Space Mono', monospace" }, callback: v => isDemo ? v + "K" : fmt(v) }
+        }
       }
     }
   });
@@ -750,9 +801,91 @@ function updateBurnChart() {
 
 function switchChart(mode) {
   chartMode = mode;
-  document.getElementById("ctab-burn").className    = "ctab" + (mode === "burn"    ? " active" : "");
-  document.getElementById("ctab-rewards").className = "ctab" + (mode === "rewards" ? " active" : "");
+  document.getElementById("ctab-burn").className    = "ctab" + (mode === "burn"    ? " active-fire" : "");
+  document.getElementById("ctab-rewards").className = "ctab" + (mode === "rewards" ? " active-teal" : "");
   updateBurnChart();
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// PRICE TRACKER — DexScreener
+// ═══════════════════════════════════════════════════════════════════
+const PRICE_CONFIG = {
+  IBB: "0x41130A0EBC8BA9830F4885e3e9E8C6d06D38FF9C",
+  ICB: "0xdd9429e589531188d0A5cbDbF997C379143A1919",
+  CHAIN: "pulsechain",
+};
+
+function fmtUSD(n) {
+  if (!n) return "—";
+  const v = parseFloat(n);
+  if (v < 0.000001) return "$" + v.toExponential(2);
+  if (v < 0.01)     return "$" + v.toFixed(6);
+  if (v < 1)        return "$" + v.toFixed(4);
+  if (v < 1000)     return "$" + v.toFixed(2);
+  return "$" + (v / 1000).toFixed(2) + "K";
+}
+
+function fmtVol(n) {
+  if (!n) return "Vol —";
+  if (n >= 1e6) return "Vol $" + (n/1e6).toFixed(1) + "M";
+  if (n >= 1e3) return "Vol $" + (n/1e3).toFixed(1) + "K";
+  return "Vol $" + n.toFixed(0);
+}
+
+function setChange(elId, pct) {
+  const el = document.getElementById(elId);
+  if (!el || pct == null) return;
+  const v = parseFloat(pct);
+  const sign = v >= 0 ? "+" : "";
+  el.textContent = sign + v.toFixed(2) + "%";
+  el.className = "price-token-change " + (v >= 0 ? "up" : "down");
+}
+
+async function fetchPrices() {
+  const dot    = document.getElementById("price-dot");
+  const status = document.getElementById("price-status");
+  dot.className = "price-dot pulsing";
+  status.textContent = "Fetching prices…";
+
+  try {
+    const [ibbRes, icbRes] = await Promise.all([
+      fetch("https://api.dexscreener.com/token-pairs/v1/" + PRICE_CONFIG.CHAIN + "/" + PRICE_CONFIG.IBB),
+      fetch("https://api.dexscreener.com/token-pairs/v1/" + PRICE_CONFIG.CHAIN + "/" + PRICE_CONFIG.ICB),
+    ]);
+    const ibbData = await ibbRes.json();
+    const icbData = await icbRes.json();
+
+    // Pick the pair with highest liquidity
+    function bestPair(pairs) {
+      if (!pairs || pairs.length === 0) return null;
+      return pairs.reduce((best, p) =>
+        ((p.liquidity && p.liquidity.usd) || 0) > ((best.liquidity && best.liquidity.usd) || 0) ? p : best
+      );
+    }
+
+    const ibb = bestPair(Array.isArray(ibbData) ? ibbData : ibbData.pairs);
+    const icb = bestPair(Array.isArray(icbData) ? icbData : icbData.pairs);
+
+    if (ibb) {
+      document.getElementById("ibb-price").textContent = fmtUSD(ibb.priceUsd);
+      document.getElementById("ibb-vol").textContent   = fmtVol(ibb.volume && ibb.volume.h24);
+      setChange("ibb-change", ibb.priceChange && ibb.priceChange.h24);
+    }
+    if (icb) {
+      document.getElementById("icb-price").textContent = fmtUSD(icb.priceUsd);
+      document.getElementById("icb-vol").textContent   = fmtVol(icb.volume && icb.volume.h24);
+      setChange("icb-change", icb.priceChange && icb.priceChange.h24);
+    }
+
+    dot.className = "price-dot";
+    const now = new Date();
+    status.textContent = "Updated " + now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch(e) {
+    dot.className = "price-dot";
+    status.textContent = "Price fetch failed";
+    console.warn("Price fetch error:", e);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -762,23 +895,20 @@ async function refreshAll() {
   const btn = document.getElementById("refresh-btn");
   btn.disabled = true;
   btn.textContent = "Loading…";
-
   await Promise.allSettled([
+    fetchPrices(),
     loadPoolStats(),
     loadPendingAmounts(),
     runIndexer(),
   ]);
-
   btn.disabled = false;
   btn.textContent = "↻ Refresh";
 }
 
-// Boot
 window.addEventListener("load", () => {
-  updateBurnChart(); // show demo chart immediately
+  updateBurnChart();
   refreshAll();
-
-  // Auto-refresh every 60s
+  setInterval(fetchPrices, 30000);
   setInterval(() => { if (!indexerState.running) refreshAll(); }, 60000);
 });
 </script>
