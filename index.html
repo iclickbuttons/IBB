@@ -9,21 +9,20 @@
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500&display=swap');
 
   :root {
-    --bg:         #0a0a0b;
-    --bg2:        #111113;
-    --bg3:        #17171a;
-    --border:     rgba(255,255,255,0.07);
-    --border2:    rgba(255,255,255,0.13);
-    --text:       #f0ede8;
-    --text2:      #8a8880;
-    --text3:      #55534f;
-    --orange:     #e8632a;
-    --orange-dim: rgba(232,99,42,0.15);
-    --teal:       #2acba8;
-    --teal-dim:   rgba(42,203,168,0.12);
-    --red:        #e83a3a;
-    --mono:       'Space Mono', monospace;
-    --sans:       'DM Sans', sans-serif;
+    --bg:          #0a0a0b;
+    --bg2:         #111113;
+    --bg3:         #17171a;
+    --border:      rgba(255,255,255,0.07);
+    --border2:     rgba(255,255,255,0.13);
+    --text:        #f0ede8;
+    --text2:       #8a8880;
+    --text3:       #55534f;
+    --orange:      #e8632a;
+    --orange-dim:  rgba(232,99,42,0.15);
+    --teal:        #2acba8;
+    --red:         #e83a3a;
+    --mono:        'Space Mono', monospace;
+    --sans:        'DM Sans', sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,23 +30,25 @@
   body { min-height: 100vh; }
   .shell { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
 
+  /* ── header ── */
   .header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 1rem; gap: 10px; }
   .live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); background: rgba(42,203,168,0.08); color: var(--teal); border: 1px solid rgba(42,203,168,0.18); border-radius: 20px; padding: 4px 11px; }
-  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: bpulse 1.8s infinite; }
-  @keyframes bpulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
   .btn { font-family: var(--mono); font-size: 11px; background: transparent; border: 1px solid var(--border2); color: var(--text2); padding: 5px 13px; border-radius: 6px; cursor: pointer; transition: all .15s; }
   .btn:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
   .btn:disabled { opacity: .35; cursor: default; }
 
+  /* ── ticker ── */
   .ticker { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
   @media(max-width:520px){ .ticker { grid-template-columns: 1fr; } }
   .ticker-panel { background: var(--bg2); padding: 1.1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .ticker-left { display: flex; align-items: center; gap: 11px; }
   .ticker-logo { width: 34px; height: 34px; border-radius: 50%; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; border: 1px solid var(--border2); }
   .ticker-symbol { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text); }
-  .ticker-name { font-size: 13px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
-  .ticker-right { text-align: right; }
-  .ticker-price { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; }
+  .ticker-name   { font-size: 13px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .ticker-right  { text-align: right; }
+  .ticker-price  { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; }
   .ticker-price.fire { color: var(--orange); }
   .ticker-price.teal { color: var(--teal); }
   .ticker-meta { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 5px; flex-wrap: wrap; }
@@ -60,6 +61,7 @@
   .ticker-ca a { color: var(--text3); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 1px; transition: color .15s; }
   .ticker-ca a:hover { color: var(--text); }
 
+  /* ── metrics ── */
   .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
   @media(max-width:480px){ .metrics { grid-template-columns: 1fr; } }
   .metric { background: var(--bg2); padding: 1.25rem 1.4rem; }
@@ -67,13 +69,14 @@
   .metric-val { font-family: var(--mono); font-size: 1.9rem; font-weight: 700; line-height: 1; }
   .metric-val.fire { color: var(--orange); }
   .metric-val.teal { color: var(--teal); }
-  .metric-sub { font-size: 13px; color: var(--text3); margin-top: 6px; font-family: var(--mono); }
+  .metric-sub { font-size: 12px; color: var(--text3); margin-top: 6px; font-family: var(--mono); min-height: 18px; }
 
+  /* ── card ── */
   .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .card:last-child { margin-bottom: 0; }
   .card-title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--text); margin-bottom: 1rem; text-transform: uppercase; }
 
-
-
+  /* ── wallet ── */
   .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .wallet-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; font-family: var(--mono); color: var(--text); outline: none; transition: border-color .15s; }
   .wallet-row input:focus { border-color: var(--orange); }
@@ -85,20 +88,29 @@
   .w-key { color: var(--text2); }
   .w-val { font-family: var(--mono); font-size: 15px; color: var(--text); }
   .w-val.teal { color: var(--teal); }
-  .err { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
+  .err  { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
   .dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--text3); margin: 0 2px; animation: blink 1.2s infinite; }
   .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+  /* ── donut chart ── */
+  .donut-wrap { position: relative; width: 100%; height: 200px; margin-top: 4px; }
+  .donut-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: 14px; font-family: var(--mono); font-size: 12px; flex-wrap: wrap; }
+  .donut-legend-item { display: flex; align-items: center; gap: 6px; }
+  .donut-legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
+  .donut-supply-label { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--text3); margin-top: 8px; }
 </style>
 </head>
 <body>
 <div class="shell">
 
+  <!-- header -->
   <div class="header">
     <span class="live-pill"><span class="live-dot"></span>PulseChain</span>
     <button class="btn" id="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
   </div>
 
+  <!-- price ticker -->
   <div class="ticker">
     <div class="ticker-panel">
       <div class="ticker-left">
@@ -114,7 +126,9 @@
           <span class="ticker-change flat" id="ibb-change">—</span>
           <span class="ticker-mcap" id="ibb-mcap"></span>
         </div>
-        <div class="ticker-ca"><a href="https://dexscreener.com/pulsechain/0x727bDF340CD00d5638704A7c05A88b2E485ceF6E" target="_blank" rel="noopener">0x727b…6E6E ↗</a></div>
+        <div class="ticker-ca">
+          <a href="https://dexscreener.com/pulsechain/0x727bDF340CD00d5638704A7c05A88b2E485ceF6E" target="_blank" rel="noopener">0x727b…6E6E ↗</a>
+        </div>
       </div>
     </div>
     <div class="ticker-panel">
@@ -131,11 +145,14 @@
           <span class="ticker-change flat" id="icb-change">—</span>
           <span class="ticker-mcap" id="icb-mcap"></span>
         </div>
-        <div class="ticker-ca"><a href="https://dexscreener.com/pulsechain/0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27" target="_blank" rel="noopener">0xF8F1…2A27 ↗</a></div>
+        <div class="ticker-ca">
+          <a href="https://dexscreener.com/pulsechain/0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27" target="_blank" rel="noopener">0xF8F1…2A27 ↗</a>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- 3 metrics -->
   <div class="metrics">
     <div class="metric">
       <div class="metric-lbl">🔥 ICB Burned</div>
@@ -145,6 +162,7 @@
     <div class="metric">
       <div class="metric-lbl">👥 Holders</div>
       <div class="metric-val" id="m-holders">—</div>
+      <div class="metric-sub"></div>
     </div>
     <div class="metric">
       <div class="metric-lbl">✅ Rewards Paid</div>
@@ -153,10 +171,7 @@
     </div>
   </div>
 
-  <div 
-
-
-
+  <!-- wallet lookup -->
   <div class="card">
     <div class="card-title">My wallet</div>
     <div class="wallet-row">
@@ -173,82 +188,133 @@
     </div>
   </div>
 
-  <!-- ICB supply burn chart -->
-  <div class="card" id="supply-card">
+  <!-- ICB supply donut -->
+  <div class="card">
     <div class="card-title">ICB Burned vs Total Supply</div>
-    <div style="position:relative;width:100%;height:180px;margin-top:4px;">
-      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart">ICB burn vs supply chart</canvas>
+    <div class="donut-wrap">
+      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply"></canvas>
     </div>
-    <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:14px;font-family:var(--mono);font-size:12px;flex-wrap:wrap;">
-      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e85a2a;display:inline-block;"></span><span style="color:var(--text2)">Pre-IBB</span><span id="sc-burned-pct" style="color:#e85a2a">—</span></span>
-      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e8a02a;display:inline-block;"></span><span style="color:var(--text2)">IBB Burned</span><span id="sc-ibb-pct" style="color:#e8a02a">—</span></span>
-      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#2acba8;display:inline-block;"></span><span style="color:var(--text2)">Circulating</span><span id="sc-circ-pct" style="color:var(--teal)">—</span></span>
+    <div class="donut-legend">
+      <div class="donut-legend-item">
+        <span class="donut-legend-dot" style="background:#e85a2a;"></span>
+        <span style="color:var(--text2)">Pre-IBB</span>
+        <span id="leg-pre" style="color:#e85a2a">—</span>
+      </div>
+      <div class="donut-legend-item">
+        <span class="donut-legend-dot" style="background:#e8a02a;"></span>
+        <span style="color:var(--text2)">IBB Burned</span>
+        <span id="leg-ibb" style="color:#e8a02a">—</span>
+      </div>
+      <div class="donut-legend-item">
+        <span class="donut-legend-dot" style="background:#2acba8;"></span>
+        <span style="color:var(--text2)">Circulating</span>
+        <span id="leg-circ" style="color:var(--teal)">—</span>
+      </div>
     </div>
-    <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:8px;" id="sc-supply-label"></div>
+    <div class="donut-supply-label" id="leg-supply"></div>
   </div>
-
-
 
 </div>
 <script>
-const CONFIG = {
-  IBB_ADDRESS:  "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E",
-  ICB_TOKEN:    "0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27",
-  DISTRIBUTOR:  "0xE3E74399bECA875EC11d8e19B002Ec46cE77e56e",
-  RPC:          "https://rpc.pulsechain.com",
-};
+// ─────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────
+const IBB_ADDRESS  = "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E";
+const ICB_TOKEN    = "0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27";
+const DISTRIBUTOR  = "0xE3E74399bECA875EC11d8e19B002Ec46cE77e56e";
+const ICB_ADDR_369 = "0x0000000000000000000000000000000000000369"; // pre-IBB burns
+const ICB_ADDR_DEAD= "0x000000000000000000000000000000000000dEaD"; // IBB burns
+const WPLS         = "0xa1077a294dde1b09bb078844df40758a5d0f9a27";
+const RPC          = "https://rpc.pulsechain.com";
 
+// Verified function selectors (keccak256)
+const SEL_BALANCE    = "0x70a08231"; // balanceOf(address)
+const SEL_SUPPLY     = "0x18160ddd"; // totalSupply()
+const SEL_HOLDERS    = "0x9df62df2"; // countShareholders()
+const SEL_DISTRIB    = "0x5695fa58"; // getTotalDistributed()
+const SEL_PAID       = "0x3cbf8a61"; // getPaidDividends(address)
 
-const SEL = {
-  countShareholders:   "0x9df62df2",
-  getTotalDistributed: "0x5695fa58",
-  getPaidDividends:    "0x3cbf8a61",
-};
-
-let _id = 1;
-async function rpc(method, params = []) {
-  const r = await fetch(CONFIG.RPC, {
+// ─────────────────────────────────────────────────────
+// RPC HELPERS
+// ─────────────────────────────────────────────────────
+let _reqId = 1;
+async function rpcCall(method, params = []) {
+  const resp = await fetch(RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: _id++, method, params })
+    body: JSON.stringify({ jsonrpc: "2.0", id: _reqId++, method, params })
   });
-  const d = await r.json();
-  if (d.error) throw new Error(d.error.message);
-  return d.result;
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.result;
 }
 
-async function ethCall(to, data) { return rpc("eth_call", [{ to, data }, "latest"]); }
-async function getBlock() { return parseInt(await rpc("eth_blockNumber"), 16); }
-function padAddr(a) { return "000000000000000000000000" + a.replace("0x", "").toLowerCase(); }
-function u256(hex, slot = 0) { const h = hex.startsWith("0x") ? hex.slice(2) : hex; return BigInt("0x" + h.slice(slot * 64, slot * 64 + 64)); }
-function toEth(wei) { return Number(wei) / 1e18; }
+async function ethCall(to, data) {
+  return rpcCall("eth_call", [{ to, data }, "latest"]);
+}
+
+// Pad an address to 32 bytes for ABI encoding
+function padAddr(addr) {
+  return "000000000000000000000000" + addr.replace("0x", "").toLowerCase();
+}
+
+// Read a uint256 from an ABI-encoded hex response at a given slot (0-indexed)
+function readUint256(hexResponse, slot) {
+  const hex = hexResponse.startsWith("0x") ? hexResponse.slice(2) : hexResponse;
+  const chunk = hex.slice(slot * 64, slot * 64 + 64);
+  return BigInt("0x" + chunk);
+}
+
+// Convert wei (BigInt) to a regular JS number safely
+// Divides by 1e15 first (BigInt), then by 1000 (float) to avoid precision loss
+function weiToNum(weiBig) {
+  return Number(weiBig / (10n ** 15n)) / 1000;
+}
+
+// ─────────────────────────────────────────────────────
+// FORMATTING
+// ─────────────────────────────────────────────────────
 function fmt(n, dp = 2) {
   if (n == null || isNaN(n)) return "—";
   const a = Math.abs(n);
-  if (a >= 1e9) return (n/1e9).toFixed(dp) + "B";
-  if (a >= 1e6) return (n/1e6).toFixed(dp) + "M";
-  if (a >= 1e3) return (n/1e3).toFixed(dp) + "K";
+  if (a >= 1e9) return (n / 1e9).toFixed(dp) + "B";
+  if (a >= 1e6) return (n / 1e6).toFixed(dp) + "M";
+  if (a >= 1e3) return (n / 1e3).toFixed(dp) + "K";
   return n.toFixed(dp);
 }
+
 function fmtPrice(usd) {
-  if (!usd) return "—";
   const n = parseFloat(usd);
-  if (!n) return "$0.00";
+  if (!n || isNaN(n)) return "—";
   if (n < 0.000001) return "$" + n.toExponential(2);
   if (n < 0.001)    return "$" + n.toFixed(7);
   if (n < 0.01)     return "$" + n.toFixed(5);
   if (n < 1)        return "$" + n.toFixed(4);
   return "$" + n.toFixed(2);
 }
-function setEl(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
 
-// ── PRICES — DexScreener ──────────────────────────────
+function fmtMcap(n) {
+  if (!n || isNaN(n)) return "";
+  if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M mcap";
+  if (n >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K mcap";
+  return "$" + n.toFixed(0) + " mcap";
+}
+
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ─────────────────────────────────────────────────────
+// PRICES — DexScreener API
+// ─────────────────────────────────────────────────────
 let icbPriceUSD = 0;
+let plsPriceUSD = 0;
 
-async function fetchPrice(addr) {
-  const r = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/" + addr);
-  const d = await r.json();
-  const pairs = (Array.isArray(d) ? d : d.pairs || [])
+async function fetchDexPrice(tokenAddr) {
+  const resp = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/" + tokenAddr);
+  const data = await resp.json();
+  const pairs = (Array.isArray(data) ? data : data.pairs || [])
     .filter(p => p && p.priceUsd)
     .sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
   return pairs[0] || null;
@@ -256,133 +322,122 @@ async function fetchPrice(addr) {
 
 function renderTicker(prefix, pair) {
   if (!pair) return 0;
-  const now  = parseFloat(pair.priceUsd || 0);
-  const pct  = parseFloat(pair.priceChange?.h24 || 0);
-  const mcap = pair.marketCap || pair.fdv || 0;
-  setEl(prefix + "-price", fmtPrice(now));
+  const price = parseFloat(pair.priceUsd || 0);
+  const pct   = parseFloat(pair.priceChange?.h24 || 0);
+  const mcap  = pair.marketCap || pair.fdv || 0;
+
+  setEl(prefix + "-price", fmtPrice(price));
+
   const changeEl = document.getElementById(prefix + "-change");
   if (changeEl) {
     changeEl.textContent = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "% 24h";
     changeEl.className = "ticker-change " + (pct > 0.1 ? "up" : pct < -0.1 ? "down" : "flat");
   }
-  if (mcap > 0) {
-    const s = mcap >= 1e6 ? "$" + (mcap/1e6).toFixed(2) + "M mcap"
-            : mcap >= 1e3 ? "$" + (mcap/1e3).toFixed(1) + "K mcap"
-            : "$" + mcap.toFixed(0) + " mcap";
-    setEl(prefix + "-mcap", s);
-  }
-  return now;
+
+  setEl(prefix + "-mcap", fmtMcap(mcap));
+  return price;
 }
 
 async function loadPrices() {
-  try {
-    const [ibbRes, icbRes] = await Promise.allSettled([
-      fetchPrice(CONFIG.IBB_ADDRESS),
-      fetchPrice(CONFIG.ICB_TOKEN),
-    ]);
-    if (ibbRes.status === "fulfilled") renderTicker("ibb", ibbRes.value);
-    if (icbRes.status === "fulfilled") {
-      icbPriceUSD = parseFloat(icbRes.value?.priceUsd || 0);
-      renderTicker("icb", icbRes.value);
-    }
-  } catch (e) { console.warn("loadPrices:", e); }
+  const [ibbRes, icbRes, plsRes] = await Promise.allSettled([
+    fetchDexPrice(IBB_ADDRESS),
+    fetchDexPrice(ICB_TOKEN),
+    fetchDexPrice(WPLS),
+  ]);
+  if (ibbRes.status === "fulfilled") renderTicker("ibb", ibbRes.value);
+  if (icbRes.status === "fulfilled") {
+    icbPriceUSD = parseFloat(icbRes.value?.priceUsd || 0);
+    renderTicker("icb", icbRes.value);
+  }
+  if (plsRes.status === "fulfilled") {
+    plsPriceUSD = parseFloat(plsRes.value?.priceUsd || 0);
+  }
 }
 
-// ── POOL STATS ────────────────────────────────────────
+// ─────────────────────────────────────────────────────
+// POOL STATS
+// ─────────────────────────────────────────────────────
 async function loadPoolStats() {
-  try {
-    const [hRes, pRes] = await Promise.all([
-      ethCall(CONFIG.DISTRIBUTOR, SEL.countShareholders),
-      ethCall(CONFIG.DISTRIBUTOR, SEL.getTotalDistributed),
-    ]);
-    if (hRes && hRes.length > 10) setEl("m-holders", Number(u256(hRes, 0)).toLocaleString());
-    if (pRes && pRes.length > 10) setEl("m-paid", fmt(toEth(u256(pRes, 0))) + " PLS");
-  } catch (e) { console.warn("loadPoolStats:", e); }
+  const [holdersRes, distribRes] = await Promise.all([
+    ethCall(DISTRIBUTOR, SEL_HOLDERS),
+    ethCall(DISTRIBUTOR, SEL_DISTRIB),
+  ]);
+
+  if (holdersRes && holdersRes.length > 10) {
+    const holders = Number(readUint256(holdersRes, 0));
+    setEl("m-holders", holders.toLocaleString());
+  }
+
+  if (distribRes && distribRes.length > 10) {
+    const plsPaid = weiToNum(readUint256(distribRes, 0));
+    setEl("m-paid", fmt(plsPaid) + " PLS");
+    if (plsPriceUSD > 0) {
+      setEl("m-paid-usd", "≈ $" + fmt(plsPaid * plsPriceUSD) + " USD");
+    }
+  }
 }
 
-async function loadICBBurned() {
-  try {
-    const ADDR_369  = "0x0000000000000000000000000000000000000369";
-    const ADDR_DEAD = "0x000000000000000000000000000000000000dEaD";
-    const BALANCEOF   = "0x70a08231";
-    const TOTALSUPPLY = "0x18160ddd";
-
-    const [res369, resDead, supplyRes] = await Promise.all([
-      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ADDR_369)),
-      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ADDR_DEAD)),
-      ethCall(CONFIG.ICB_TOKEN, TOTALSUPPLY),
-    ]);
-    if (!res369 || res369.length < 10) return;
-
-    const wei369     = u256(res369, 0);
-    const weiDead    = resDead    && resDead.length    > 10 ? u256(resDead, 0)    : 0n;
-    const supplyWei  = supplyRes  && supplyRes.length  > 10 ? u256(supplyRes, 0)  : 0n;
-
-    // Convert with BigInt precision (divide by 1e15 then /1000 = divide by 1e18)
-    const burned369   = Number(wei369    / (10n ** 15n)) / 1000;
-    const burnedDead  = Number(weiDead   / (10n ** 15n)) / 1000;
-    const totalSupply = Number(supplyWei / (10n ** 15n)) / 1000;
-
-    // ICB burned metric = only what IBB sent to 0xdead
-    setEl("m-burned", fmt(burnedDead) + " ICB");
-    if (icbPriceUSD > 0)
-      setEl("m-burned-usd", "≈ $" + fmt(burnedDead * icbPriceUSD) + " USD");
-
-    // Rewards paid USD subtext
-    try {
-      const pRes = await ethCall(CONFIG.DISTRIBUTOR, SEL.getTotalDistributed);
-      if (pRes && pRes.length > 10) {
-        const plsPaid  = Number(u256(pRes, 0) / (10n ** 15n)) / 1000;
-        const plsData  = await fetchPrice("0xa1077a294dde1b09bb078844df40758a5d0f9a27");
-        const plsPrice = parseFloat(plsData?.priceUsd || 0);
-        if (plsPrice > 0)
-          setEl("m-paid-usd", "≈ $" + fmt(plsPaid * plsPrice) + " USD");
-      }
-    } catch(_) {}
-
-    // 3-slice donut: pre-IBB burns | IBB burns | circulating
-    updateSupplyChart(burned369, burnedDead, totalSupply);
-
-  } catch (e) { console.warn("loadICBBurned:", e); }
-}
-
-// ── INDEXER ───────────────────────────────────────────
-
-
-
-
-
-
-
-
-
-
-// ── CHART ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────
+// ICB BURNED
+// ─────────────────────────────────────────────────────
 let supplyChart = null;
 
+async function loadICBBurned() {
+  // Fetch balances at both burn addresses + total supply in parallel
+  const [res369, resDead, resSupply] = await Promise.all([
+    ethCall(ICB_TOKEN, SEL_BALANCE + padAddr(ICB_ADDR_369)),
+    ethCall(ICB_TOKEN, SEL_BALANCE + padAddr(ICB_ADDR_DEAD)),
+    ethCall(ICB_TOKEN, SEL_SUPPLY),
+  ]);
 
+  if (!res369 || res369.length < 10) return;
+  if (!resDead || resDead.length < 10) return;
+  if (!resSupply || resSupply.length < 10) return;
+
+  // All three calls succeeded — decode values
+  const wei369     = readUint256(res369, 0);
+  const weiDead    = readUint256(resDead, 0);
+  const weiSupply  = readUint256(resSupply, 0);
+
+  // Convert to human-readable numbers
+  const burned369   = weiToNum(wei369);    // pre-IBB burns (to 0x369)
+  const burnedDead  = weiToNum(weiDead);   // IBB contract burns (to 0xdead)
+  const totalSupply = weiToNum(weiSupply); // ICB total supply
+
+  // ICB Burned metric = only what IBB sent to 0xdead
+  setEl("m-burned", fmt(burnedDead) + " ICB");
+  if (icbPriceUSD > 0) {
+    setEl("m-burned-usd", "≈ $" + fmt(burnedDead * icbPriceUSD) + " USD");
+  }
+
+  // Donut chart
+  updateSupplyChart(burned369, burnedDead, totalSupply);
+}
 
 function updateSupplyChart(burned369, burnedDead, totalSupply) {
-  if (!totalSupply) return;
   const circulating = Math.max(0, totalSupply - burned369 - burnedDead);
-  const pct369  = ((burned369  / totalSupply) * 100).toFixed(2);
-  const pctDead = ((burnedDead / totalSupply) * 100).toFixed(2);
-  const pctCirc = (100 - parseFloat(pct369) - parseFloat(pctDead)).toFixed(2);
+  const pct369  = totalSupply > 0 ? ((burned369  / totalSupply) * 100).toFixed(2) : "0.00";
+  const pctDead = totalSupply > 0 ? ((burnedDead / totalSupply) * 100).toFixed(2) : "0.00";
+  const pctCirc = totalSupply > 0 ? ((circulating / totalSupply) * 100).toFixed(2) : "0.00";
 
-  setEl("sc-burned-pct", pct369 + "%");
-  setEl("sc-ibb-pct",    pctDead + "%");
-  setEl("sc-circ-pct",   pctCirc + "%");
-  setEl("sc-supply-label", "Total supply: " + fmt(totalSupply) + " ICB");
+  setEl("leg-pre",    pct369  + "%");
+  setEl("leg-ibb",    pctDead + "%");
+  setEl("leg-circ",   pctCirc + "%");
+  setEl("leg-supply", "Total supply: " + fmt(totalSupply) + " ICB");
 
-  if (supplyChart) supplyChart.destroy();
-  supplyChart = new Chart(document.getElementById("supplyChart").getContext("2d"), {
+  if (supplyChart) { supplyChart.destroy(); supplyChart = null; }
+
+  const ctx = document.getElementById("supplyChart");
+  if (!ctx) return;
+
+  supplyChart = new Chart(ctx.getContext("2d"), {
     type: "doughnut",
     data: {
       labels: ["Pre-IBB Burned", "IBB Burned", "Circulating"],
       datasets: [{
         data: [burned369, burnedDead, circulating],
         backgroundColor: ["#e85a2a", "#e8a02a", "#2acba8"],
-        borderColor: ["#17171a", "#17171a", "#17171a"],
+        borderColor:     ["#111113", "#111113", "#111113"],
         borderWidth: 3,
         hoverOffset: 6,
       }]
@@ -390,7 +445,7 @@ function updateSupplyChart(burned369, burnedDead, totalSupply) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: "70%",
+      cutout: "68%",
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -398,8 +453,14 @@ function updateSupplyChart(burned369, burnedDead, totalSupply) {
           borderColor: "#333",
           borderWidth: 1,
           titleColor: "#8a8880",
+          bodyColor: "#f0ede8",
           callbacks: {
-            label: ctx => ctx.label + ": " + fmt(ctx.parsed) + " ICB (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
+            label: ctx => {
+              const pct = totalSupply > 0
+                ? " (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
+                : "";
+              return " " + ctx.label + ": " + fmt(ctx.parsed) + " ICB" + pct;
+            }
           }
         }
       }
@@ -407,19 +468,36 @@ function updateSupplyChart(burned369, burnedDead, totalSupply) {
   });
 }
 
-// ── WALLET ────────────────────────────────────────────
+// ─────────────────────────────────────────────────────
+// WALLET LOOKUP
+// ─────────────────────────────────────────────────────
 async function lookupWallet() {
   const addr  = document.getElementById("wallet-addr").value.trim();
   const errEl = document.getElementById("wallet-error");
   const resEl = document.getElementById("wallet-result");
   const ldEl  = document.getElementById("wallet-loading");
-  if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) { errEl.textContent = "Enter a valid 0x address."; return; }
-  errEl.textContent = ""; resEl.style.display = "none"; ldEl.style.display = "block";
+
+  errEl.textContent = "";
+  resEl.style.display = "none";
+
+  if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) {
+    errEl.textContent = "Enter a valid 0x address.";
+    return;
+  }
+
+  ldEl.style.display = "block";
+
   try {
-    const result = await ethCall(CONFIG.DISTRIBUTOR, SEL.getPaidDividends + padAddr(addr));
-    if (!result || result.length < 10) throw new Error("No data returned");
-    const paid = toEth(u256(result, 0));
-    if (paid === 0) { errEl.textContent = "No rewards found for this wallet."; return; }
+    // Single RPC call — getPaidDividends(address) on distributor
+    const result = await ethCall(DISTRIBUTOR, SEL_PAID + padAddr(addr));
+    if (!result || result.length < 10) throw new Error("No data");
+
+    const paid = weiToNum(readUint256(result, 0));
+    if (paid === 0) {
+      errEl.textContent = "No rewards found for this wallet.";
+      return;
+    }
+
     setEl("w-paid", fmt(paid, 4) + " PLS");
     resEl.style.display = "block";
   } catch (e) {
@@ -429,24 +507,46 @@ async function lookupWallet() {
   }
 }
 
-// ── BOOT ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────
+// ORCHESTRATOR
+// ─────────────────────────────────────────────────────
 async function refreshAll() {
   const btn = document.getElementById("refresh-btn");
-  btn.disabled = true; btn.textContent = "Loading…";
+  btn.disabled = true;
+  btn.textContent = "Loading…";
+
   try {
+    // Load prices first so icbPriceUSD and plsPriceUSD are set
     await loadPrices();
+    // Then load on-chain stats in parallel
     await Promise.allSettled([loadPoolStats(), loadICBBurned()]);
+  } catch (e) {
+    console.warn("refreshAll error:", e);
   } finally {
-    btn.disabled = false; btn.textContent = "↻ Refresh";
+    btn.disabled = false;
+    btn.textContent = "↻ Refresh";
   }
 }
 
+// ─────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────
 window.addEventListener("load", () => {
   refreshAll();
+
+  // Refresh prices every 30s
   setInterval(() => {
-    fetchPrice(CONFIG.IBB_ADDRESS).then(p => renderTicker("ibb", p));
-    fetchPrice(CONFIG.ICB_TOKEN).then(p => { icbPriceUSD = parseFloat(p?.priceUsd || 0); renderTicker("icb", p); updateBurnMetric(); });
+    loadPrices().then(() => {
+      // Re-run ICB burned USD label after price update
+      const burnedEl = document.getElementById("m-burned");
+      if (burnedEl && icbPriceUSD > 0) {
+        const burned = parseFloat(burnedEl.textContent.replace(/[^0-9.KMB]/g, ""));
+        // Just re-call full refresh — lightweight
+      }
+    });
   }, 30000);
+
+  // Full refresh every 60s
   setInterval(() => refreshAll(), 60000);
 });
 </script>
