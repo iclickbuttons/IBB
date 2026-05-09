@@ -248,9 +248,10 @@ async function getBlock() {
 
 // precomputed selectors
 const SEL = {
-  poolStats:       "0xe8a3d485",
-  pendingBurnPLS:  "0x48a5e7e7",
-  getPaidDividends:"0x3cbf8a61",
+  getPoolStatistics: "0xba3194ed",  // getPoolStatistics() on IBB
+  countShareholders: "0x9df62df2",  // countShareholders() on distributor
+  getTotalDistributed:"0x5695fa58", // getTotalDistributed() on distributor
+  getPaidDividends:  "0x3cbf8a61",  // getPaidDividends(address) on distributor
 };
 
 function padAddr(a) { return "000000000000000000000000" + a.replace("0x","").toLowerCase(); }
@@ -325,13 +326,15 @@ function renderTicker(prefix, data, color) {
 // ON-CHAIN POOL STATS
 // ═══════════════════════════════════════════════════════
 async function loadPoolStats() {
-  const r = await ethCall(CONFIG.IBB_ADDRESS, SEL.poolStats);
-  if (!r || r.length < 10) return;
-  const rewards = u256(r, 0);
-  const paid    = u256(r, 1);
-  const holders = u256(r, 2);
-  setEl("m-holders", holders.toString());
-  setEl("m-paid",    fmt(toEth(paid)) + " PLS");
+  try {
+    // Call distributor directly for accurate numbers
+    const [holdersRes, paidRes] = await Promise.all([
+      ethCall(CONFIG.DISTRIBUTOR, SEL.countShareholders),
+      ethCall(CONFIG.DISTRIBUTOR, SEL.getTotalDistributed),
+    ]);
+    if (holdersRes && holdersRes.length > 10) setEl("m-holders", Number(u256(holdersRes, 0)).toLocaleString());
+    if (paidRes    && paidRes.length > 10)    setEl("m-paid",    fmt(toEth(u256(paidRes, 0))) + " PLS");
+  } catch(e) { console.warn("loadPoolStats error:", e); }
 }
 
 // ═══════════════════════════════════════════════════════
