@@ -622,14 +622,13 @@ async function lookupWallet() {
     let txCount  = 0;
     let nextPage = null;
     let pageNum  = 0;
+    // Track tx hashes already counted to avoid double-counting
+    // when distributor fires multiple internal txs in same transaction
+    const seenTxHashes = new Set();
 
     do {
-      // Build URL — use next_page_params cursor if available, else start fresh
       let url = `https://api.scan.pulsechain.com/api/v2/addresses/${addr}/internal-transactions?limit=100`;
-      if (nextPage) {
-        const params = new URLSearchParams(nextPage).toString();
-        url += "&" + params;
-      }
+      if (nextPage) url += "&" + new URLSearchParams(nextPage).toString();
 
       setEl("idx-status", `Loading rewards page ${++pageNum}…`);
       const resp = await fetch(url);
@@ -641,7 +640,17 @@ async function lookupWallet() {
         const to   = (tx.to?.hash   || "").toLowerCase();
         const from = (tx.from?.hash || "").toLowerCase();
         const val  = tx.value || "0";
-        if (to === addr.toLowerCase() && from === distrib && BigInt(val) > 0n) {
+        const hash = tx.transaction_hash || "";
+
+        // Only count inbound transfers from distributor
+        // AND only count each tx hash once (dedup double-sends in same tx)
+        if (
+          to === addr.toLowerCase() &&
+          from === distrib &&
+          BigInt(val) > 0n &&
+          !seenTxHashes.has(hash)
+        ) {
+          seenTxHashes.add(hash);
           totalPLS += Number(BigInt(val)) / 1e18;
           txCount++;
         }
