@@ -73,13 +73,7 @@
   .card-title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--text); margin-bottom: 1rem; text-transform: uppercase; }
 
   #chart-wrap { width: 100%; height: 190px; margin-top: 8px; }
-  .idx-bar { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-  .idx-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
-  .idx-dot.running { background: var(--orange); animation: bpulse 1.4s infinite; }
-  .idx-dot.done    { background: var(--teal); }
-  .idx-txt { font-size: 12px; color: var(--text3); font-family: var(--mono); }
-  .prog-track { flex: 1; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-  .prog-fill  { height: 100%; border-radius: 2px; background: var(--orange); transition: width .5s ease; }
+
 
   .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .wallet-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; font-family: var(--mono); color: var(--text); outline: none; transition: border-color .15s; }
@@ -180,11 +174,7 @@
     <div id="chart-wrap">
       <canvas id="mainChart" role="img" aria-label="Cumulative ICB burned over time">Cumulative ICB burn chart</canvas>
     </div>
-    <div class="idx-bar">
-      <div class="idx-dot" id="idx-dot"></div>
-      <span class="idx-txt" id="idx-status">Waiting…</span>
-      <div class="prog-track"><div class="prog-fill" id="idx-prog" style="width:0%"></div></div>
-    </div>
+
   </div>
 
 </div>
@@ -194,11 +184,8 @@ const CONFIG = {
   ICB_TOKEN:    "0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27",
   DISTRIBUTOR:  "0xE3E74399bECA875EC11d8e19B002Ec46cE77e56e",
   RPC:          "https://rpc.pulsechain.com",
-  DEPLOY_BLOCK: 0,
-  CHUNK_SIZE:   2000,
 };
 
-const BURN_TOPIC = "0x3dcdee83a97284b298a1d5197ac6adf342aa15c061ded0d9318e9b7bf6879cd2";
 
 const SEL = {
   countShareholders:   "0x9df62df2",
@@ -301,160 +288,58 @@ async function loadPoolStats() {
   } catch (e) { console.warn("loadPoolStats:", e); }
 }
 
+async function loadICBBurned() {
+  try {
+    const DEAD       = "0x000000000000000000000000000000000000dead";
+    const BALANCEOF  = "0x70a08231";
+    const TOTALSUPPLY= "0x18160ddd";
+    const PRE_BURN   = 51000; // ICB burned before IBB deployed
+
+    const [deadRes, supplyRes] = await Promise.all([
+      ethCall(CONFIG.ICB_TOKEN, BALANCEOF   + padAddr(DEAD)),
+      ethCall(CONFIG.ICB_TOKEN, TOTALSUPPLY),
+    ]);
+    if (!deadRes || deadRes.length < 10) return;
+
+    const deadBalance  = toEth(u256(deadRes, 0));
+    const totalSupply  = supplyRes && supplyRes.length > 10 ? toEth(u256(supplyRes, 0)) : 0;
+    const ibbBurned    = Math.max(0, deadBalance - PRE_BURN);
+    const pctBurned    = totalSupply > 0 ? ((ibbBurned / totalSupply) * 100).toFixed(2) : null;
+
+    setEl("m-burned", fmt(ibbBurned) + " ICB");
+
+    let sub = "";
+    if (icbPriceUSD > 0) sub += "≈ $" + fmt(ibbBurned * icbPriceUSD) + " USD";
+    if (pctBurned)       sub += (sub ? " · " : "") + pctBurned + "% of supply";
+    if (sub) setEl("m-burned-usd", sub);
+  } catch (e) { console.warn("loadICBBurned:", e); }
+}
+
 // ── INDEXER ───────────────────────────────────────────
-function loadCache() {
-  try {
-    const raw = localStorage.getItem("ibb_idx");
-    if (!raw) return { events: [], totalICB: 0n, totalPLS: 0n, lastBlock: 0 };
-    const d = JSON.parse(raw);
-    return {
-      events:    (d.events || []).map(e => ({ ...e, pls: BigInt(e.pls), icb: BigInt(e.icb) })),
-      totalICB:  BigInt(d.totalICB || "0"),
-      totalPLS:  BigInt(d.totalPLS || "0"),
-      lastBlock: d.lastBlock || 0,
-    };
-  } catch (_) { return { events: [], totalICB: 0n, totalPLS: 0n, lastBlock: 0 }; }
-}
 
-function saveCache() {
-  try {
-    localStorage.setItem("ibb_idx", JSON.stringify({
-      events:    IDX.events.map(e => ({ ...e, pls: e.pls.toString(), icb: e.icb.toString() })),
-      totalICB:  IDX.totalICB.toString(),
-      totalPLS:  IDX.totalPLS.toString(),
-      lastBlock: IDX.lastBlock,
-    }));
-  } catch (_) {}
-}
 
-const IDX = { ...loadCache(), running: false };
 
-function updateBurnMetric() {
-  const icb = toEth(IDX.totalICB);
-  setEl("m-burned", fmt(icb) + " ICB");
-  if (icbPriceUSD > 0) setEl("m-burned-usd", "≈ $" + fmt(icb * icbPriceUSD) + " USD burned");
-}
 
-async function detectDeployBlock() {
-  if (CONFIG.DEPLOY_BLOCK > 0) return;
-  try {
-    const url = "https://api.scan.pulsechain.com/api?module=account&action=txlist&address=" + CONFIG.IBB_ADDRESS + "&sort=asc&page=1&offset=1";
-    const d = await (await fetch(url)).json();
-    if (d.status === "1" && d.result?.length > 0) CONFIG.DEPLOY_BLOCK = parseInt(d.result[0].blockNumber);
-  } catch (_) {}
-  if (!CONFIG.DEPLOY_BLOCK) CONFIG.DEPLOY_BLOCK = 21000000;
-}
 
-async function loadBurnsJSON() {
-  try {
-    setEl("idx-status", "Fetching burns.json…");
-    const base = window.location.href.replace(/\/[^/]*$/, "/");
-    const resp = await fetch(base + "burns.json?t=" + Math.floor(Date.now() / 60000));
-    if (!resp.ok) { setEl("idx-status", "burns.json not found (" + resp.status + ") — scanning from chain…"); return false; }
-    const d = await resp.json();
-    if (!d.meta || !d.events || !d.events.length) { setEl("idx-status", "burns.json empty — scanning from chain…"); return false; }
-    for (const ev of d.events) {
-      if (IDX.events.find(e => e.tx === ev.tx)) continue;
-      const pls = BigInt(ev.pls), icb = BigInt(ev.icb);
-      IDX.events.push({ block: ev.block, tx: ev.tx, pls, icb });
-      IDX.totalPLS += pls;
-      IDX.totalICB += icb;
-    }
-    if (d.meta.lastBlock > IDX.lastBlock) IDX.lastBlock = d.meta.lastBlock;
-    IDX.events.sort((a, b) => b.block - a.block);
-    setEl("idx-status", IDX.events.length + " events from burns.json · catching up…");
-    document.getElementById("idx-prog").style.width = "80%";
-    updateBurnMetric();
-    updateChart();
-    return true;
-  } catch (e) { setEl("idx-status", "burns.json error: " + e.message + " — scanning from chain…"); return false; }
-}
 
-async function scanBlocks(from, tip) {
-  const total = tip - from;
-  let scanned = 0, cursor = from;
-  while (cursor <= tip) {
-    const to  = Math.min(cursor + CONFIG.CHUNK_SIZE - 1, tip);
-    const pct = total > 0 ? Math.round((scanned / total) * 100) : 100;
-    setEl("idx-status", "Scanning new blocks… " + pct + "% (" + IDX.events.length + " events)");
-    document.getElementById("idx-prog").style.width = Math.min(100, pct) + "%";
-    try {
-      const logs = await rpc("eth_getLogs", [{ fromBlock: "0x" + cursor.toString(16), toBlock: "0x" + to.toString(16), address: CONFIG.IBB_ADDRESS, topics: [BURN_TOPIC] }]);
-      for (const log of (logs || [])) {
-        if (!log.data || log.data.length < 130) continue;
-        if (IDX.events.find(e => e.tx === log.transactionHash)) continue;
-        const pls = u256(log.data, 0), icb = u256(log.data, 1);
-        IDX.events.push({ block: parseInt(log.blockNumber, 16), tx: log.transactionHash, pls, icb });
-        IDX.totalPLS += pls;
-        IDX.totalICB += icb;
-      }
-    } catch (_) {}
-    scanned += (to - cursor + 1);
-    cursor = to + 1;
-    await new Promise(r => setTimeout(r, 40));
-  }
-  IDX.lastBlock = tip;
-  IDX.events.sort((a, b) => b.block - a.block);
-  saveCache();
-  document.getElementById("idx-dot").className = "idx-dot done";
-  setEl("idx-status", IDX.events.length + " burn events · block #" + tip.toLocaleString());
-  document.getElementById("idx-prog").style.width = "100%";
-  updateBurnMetric();
-  updateChart();
-}
 
-async function runIndexer() {
-  if (IDX.running) return;
-  IDX.running = true;
-  document.getElementById("idx-dot").className = "idx-dot running";
-  try {
-    const tip = await getBlock();
-    if (IDX.lastBlock === 0) await loadBurnsJSON();
-    const from = IDX.lastBlock > 0 ? IDX.lastBlock + 1 : null;
-    if (!from) {
-      setEl("idx-status", "No burns.json — detecting deploy block…");
-      await detectDeployBlock();
-      await scanBlocks(CONFIG.DEPLOY_BLOCK, tip);
-    } else if (from > tip) {
-      document.getElementById("idx-dot").className = "idx-dot done";
-      setEl("idx-status", IDX.events.length + " burn events · up to date");
-      document.getElementById("idx-prog").style.width = "100%";
-    } else {
-      await scanBlocks(from, tip);
-    }
-  } catch (e) {
-    document.getElementById("idx-dot").className = "idx-dot";
-    setEl("idx-status", "Error: " + e.message);
-  }
-  IDX.running = false;
-}
+
+
 
 // ── CHART ─────────────────────────────────────────────
 let chart = null;
 
 function updateChart() {
   if (chart) chart.destroy();
-  const evts = IDX.events.length > 0 ? [...IDX.events].sort((a,b) => a.block - b.block) : null;
-  let labels, data, isDemo = false;
-  if (evts) {
-    let running = 0;
-    const pts  = evts.map(ev => { running += toEth(ev.icb); return running; });
-    const step = Math.max(1, Math.floor(pts.length / 60));
-    const thin = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
-    labels = thin.map((_, i) => i === 0 ? "Start" : i === thin.length - 1 ? "Now" : "");
-    data   = thin.map(p => parseFloat(p.toFixed(2)));
-  } else {
-    isDemo = true;
-    labels = Array.from({ length: 20 }, (_, i) => i === 0 ? "Start" : i === 19 ? "Now" : "");
-    let v = 0;
-    data = labels.map(() => { v += Math.random() * 50000 + 10000; return parseFloat(v.toFixed(0)); });
-  }
+  const labels = Array.from({ length: 20 }, (_, i) => i === 0 ? "Start" : i === 19 ? "Now" : "");
+  let v = 0;
+  const data = labels.map(() => { v += Math.random() * 50000 + 10000; return parseFloat(v.toFixed(0)); });
   chart = new Chart(document.getElementById("mainChart").getContext("2d"), {
     type: "line",
     data: { labels, datasets: [{ data, borderColor: "#e8632a", borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: "#e8632a", fill: true, backgroundColor: "rgba(232,99,42,0.08)", tension: 0.4 }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: "#17171a", borderColor: "#333", borderWidth: 1, titleColor: "#8a8880", bodyColor: "#e8632a", callbacks: { title: () => "", label: ctx => fmt(ctx.parsed.y) + " ICB burned" + (isDemo ? " (demo)" : "") } } },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: "#17171a", borderColor: "#333", borderWidth: 1, titleColor: "#8a8880", bodyColor: "#e8632a", callbacks: { title: () => "", label: ctx => fmt(ctx.parsed.y) + " ICB burned" } } },
       scales: { x: { grid: { display: false }, ticks: { color: "#55534f", font: { size: 10 }, maxTicksLimit: 4 } }, y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#55534f", font: { size: 10 }, callback: v => fmt(v) }, beginAtZero: true } }
     }
   });
@@ -488,28 +373,20 @@ async function refreshAll() {
   btn.disabled = true; btn.textContent = "Loading…";
   try {
     await loadPrices();
-    await Promise.allSettled([loadPoolStats(), runIndexer()]);
-    updateBurnMetric();
+    await Promise.allSettled([loadPoolStats(), loadICBBurned()]);
   } finally {
     btn.disabled = false; btn.textContent = "↻ Refresh";
   }
 }
 
 window.addEventListener("load", () => {
-  if (IDX.events.length > 0) {
-    updateBurnMetric(); updateChart();
-    setEl("idx-status", IDX.events.length + " events cached · checking for new blocks…");
-    document.getElementById("idx-prog").style.width = "100%";
-    document.getElementById("idx-dot").className = "idx-dot done";
-  } else {
-    updateChart();
-  }
+  updateChart();
   refreshAll();
   setInterval(() => {
     fetchPrice(CONFIG.IBB_ADDRESS).then(p => renderTicker("ibb", p));
     fetchPrice(CONFIG.ICB_TOKEN).then(p => { icbPriceUSD = parseFloat(p?.priceUsd || 0); renderTicker("icb", p); updateBurnMetric(); });
   }, 30000);
-  setInterval(() => { if (!IDX.running) refreshAll(); }, 60000);
+  setInterval(() => refreshAll(), 60000);
 });
 </script>
 </body>
