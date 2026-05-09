@@ -619,38 +619,43 @@ async function lookupWallet() {
 
   try {
     let totalPLS = 0;
-    let page = 1;
-    let hasMore = true;
+    let txCount  = 0;
+    let nextPage = null;
+    let pageNum  = 0;
 
-    while (hasMore && page <= 20) {
-      const url = `https://api.scan.pulsechain.com/api/v2/addresses/${addr}/internal-transactions?filter=to%20%7C%20from&page=${page}&limit=50`;
+    do {
+      // Build URL — use next_page_params cursor if available, else start fresh
+      let url = `https://api.scan.pulsechain.com/api/v2/addresses/${addr}/internal-transactions?limit=100`;
+      if (nextPage) {
+        const params = new URLSearchParams(nextPage).toString();
+        url += "&" + params;
+      }
+
+      setEl("idx-status", `Loading rewards page ${++pageNum}…`);
       const resp = await fetch(url);
       if (!resp.ok) throw new Error("API error " + resp.status);
       const data = await resp.json();
 
       const txs = data.items || [];
-      if (!txs.length) { hasMore = false; break; }
-
       for (const tx of txs) {
         const to   = (tx.to?.hash   || "").toLowerCase();
         const from = (tx.from?.hash || "").toLowerCase();
         const val  = tx.value || "0";
-        // Only count transfers FROM the distributor TO this wallet
         if (to === addr.toLowerCase() && from === distrib && BigInt(val) > 0n) {
           totalPLS += Number(BigInt(val)) / 1e18;
+          txCount++;
         }
       }
 
-      hasMore = !!data.next_page_params;
-      page++;
-    }
+      nextPage = data.next_page_params || null;
+    } while (nextPage);
 
     if (totalPLS === 0) {
       errEl.textContent = "No PLS rewards found from the IBB distributor for this wallet.";
       return;
     }
 
-    setEl("w-paid", fmt(totalPLS, 4) + " PLS");
+    setEl("w-paid", fmt(totalPLS, 4) + " PLS (" + txCount + " payments)");
     resEl.style.display = "block";
 
   } catch(e) {
