@@ -72,7 +72,6 @@
   .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
   .card-title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--text); margin-bottom: 1rem; text-transform: uppercase; }
 
-  #chart-wrap { width: 100%; height: 190px; margin-top: 8px; }
 
 
   .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -152,18 +151,9 @@
     </div>
   </div>
 
-  <!-- ICB supply burn chart -->
-  <div class="card" id="supply-card">
-    <div class="card-title">ICB Burned vs Total Supply</div>
-    <div style="position:relative;width:100%;height:180px;margin-top:4px;">
-      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart">ICB burn vs supply chart</canvas>
-    </div>
-    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:14px;font-family:var(--mono);font-size:12px;">
-      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e8632a;display:inline-block;"></span><span style="color:var(--text2)">Burned</span><span id="sc-burned-pct" style="color:var(--orange)">—</span></span>
-      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#2acba8;display:inline-block;"></span><span style="color:var(--text2)">Circulating</span><span id="sc-circ-pct" style="color:var(--teal)">—</span></span>
-    </div>
-    <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:8px;" id="sc-supply-label"></div>
-  </div>
+  <div 
+
+
 
   <div class="card">
     <div class="card-title">My wallet</div>
@@ -181,13 +171,21 @@
     </div>
   </div>
 
-  <div class="card" style="margin-bottom:0">
-    <div class="card-title">Total ICB Burned</div>
-    <div id="chart-wrap">
-      <canvas id="mainChart" role="img" aria-label="Cumulative ICB burned over time">Cumulative ICB burn chart</canvas>
+  <!-- ICB supply burn chart -->
+  <div class="card" id="supply-card">
+    <div class="card-title">ICB Burned vs Total Supply</div>
+    <div style="position:relative;width:100%;height:180px;margin-top:4px;">
+      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart">ICB burn vs supply chart</canvas>
     </div>
-
+    <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:14px;font-family:var(--mono);font-size:12px;flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e85a2a;display:inline-block;"></span><span style="color:var(--text2)">Pre-IBB</span><span id="sc-burned-pct" style="color:#e85a2a">—</span></span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e8a02a;display:inline-block;"></span><span style="color:var(--text2)">IBB Burned</span><span id="sc-ibb-pct" style="color:#e8a02a">—</span></span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#2acba8;display:inline-block;"></span><span style="color:var(--text2)">Circulating</span><span id="sc-circ-pct" style="color:var(--teal)">—</span></span>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:8px;" id="sc-supply-label"></div>
   </div>
+
+
 
 </div>
 <script>
@@ -335,7 +333,7 @@ async function loadICBBurned() {
 
     console.log("ibbBurned:", ibbBurned, "totalSupply:", totalSupply, "pct:", pctBurned);
 
-    setEl("m-burned", fmt(ibbBurned) + " ICB");
+    setEl("m-burned", fmt(burnedDead) + " ICB");
 
     if (icbPriceUSD > 0)
 
@@ -357,44 +355,31 @@ async function loadICBBurned() {
 
 
 // ── CHART ─────────────────────────────────────────────
-let chart = null;
 let supplyChart = null;
 
-function updateChart() {
-  if (chart) chart.destroy();
-  const labels = Array.from({ length: 20 }, (_, i) => i === 0 ? "Start" : i === 19 ? "Now" : "");
-  let v = 0;
-  const data = labels.map(() => { v += Math.random() * 50000 + 10000; return parseFloat(v.toFixed(0)); });
-  chart = new Chart(document.getElementById("mainChart").getContext("2d"), {
-    type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#e8632a", borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: "#e8632a", fill: true, backgroundColor: "rgba(232,99,42,0.08)", tension: 0.4 }] },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: "#17171a", borderColor: "#333", borderWidth: 1, titleColor: "#8a8880", bodyColor: "#e8632a", callbacks: { title: () => "", label: ctx => fmt(ctx.parsed.y) + " ICB burned" } } },
-      scales: { x: { grid: { display: false }, ticks: { color: "#55534f", font: { size: 10 }, maxTicksLimit: 4 } }, y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#55534f", font: { size: 10 }, callback: v => fmt(v) }, beginAtZero: true } }
-    }
-  });
-}
 
-function updateSupplyChart(burned, totalSupply) {
-  if (!burned || !totalSupply) return;
-  const circulating = Math.max(0, totalSupply - burned);
-  const burnedPct   = ((burned / totalSupply) * 100).toFixed(2);
-  const circPct     = (100 - parseFloat(burnedPct)).toFixed(2);
 
-  setEl("sc-burned-pct", burnedPct + "%");
-  setEl("sc-circ-pct",   circPct + "%");
+function updateSupplyChart(burned369, burnedDead, totalSupply) {
+  if (!totalSupply) return;
+  const circulating = Math.max(0, totalSupply - burned369 - burnedDead);
+  const pct369  = ((burned369  / totalSupply) * 100).toFixed(2);
+  const pctDead = ((burnedDead / totalSupply) * 100).toFixed(2);
+  const pctCirc = (100 - parseFloat(pct369) - parseFloat(pctDead)).toFixed(2);
+
+  setEl("sc-burned-pct", pct369 + "%");
+  setEl("sc-ibb-pct",    pctDead + "%");
+  setEl("sc-circ-pct",   pctCirc + "%");
   setEl("sc-supply-label", "Total supply: " + fmt(totalSupply) + " ICB");
 
   if (supplyChart) supplyChart.destroy();
   supplyChart = new Chart(document.getElementById("supplyChart").getContext("2d"), {
     type: "doughnut",
     data: {
-      labels: ["Burned", "Circulating"],
+      labels: ["Pre-IBB Burned", "IBB Burned", "Circulating"],
       datasets: [{
-        data: [burned, circulating],
-        backgroundColor: ["#e8632a", "#2acba8"],
-        borderColor: ["#17171a", "#17171a"],
+        data: [burned369, burnedDead, circulating],
+        backgroundColor: ["#e85a2a", "#e8a02a", "#2acba8"],
+        borderColor: ["#17171a", "#17171a", "#17171a"],
         borderWidth: 3,
         hoverOffset: 6,
       }]
@@ -411,7 +396,7 @@ function updateSupplyChart(burned, totalSupply) {
           borderWidth: 1,
           titleColor: "#8a8880",
           callbacks: {
-            label: ctx => fmt(ctx.parsed) + " ICB (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
+            label: ctx => ctx.label + ": " + fmt(ctx.parsed) + " ICB (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
           }
         }
       }
@@ -454,7 +439,6 @@ async function refreshAll() {
 }
 
 window.addEventListener("load", () => {
-  updateChart();
   refreshAll();
   setInterval(() => {
     fetchPrice(CONFIG.IBB_ADDRESS).then(p => renderTicker("ibb", p));
