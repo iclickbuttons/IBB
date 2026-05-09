@@ -141,7 +141,6 @@
     <div class="metric">
       <div class="metric-lbl">🔥 ICB Burned</div>
       <div class="metric-val fire" id="m-burned">—</div>
-      <div class="metric-sub" id="m-burned-usd">lifetime to 0xdead</div>
     </div>
     <div class="metric">
       <div class="metric-lbl">👥 Holders</div>
@@ -303,37 +302,45 @@ async function loadPoolStats() {
 
 async function loadICBBurned() {
   try {
-    const DEAD        = "0x000000000000000000000000000000000000dead";
-    const BALANCEOF   = "0x70a08231";
-    const TOTALSUPPLY = "0x18160ddd";
-    const PRE_BURN_WEI = 51000n * (10n ** 18n); // 51000 ICB in wei as BigInt
+    const ICB_BURN_ADDR = "0x0000000000000000000000000000000000000369";
+    const BALANCEOF     = "0x70a08231";
+    const TOTALSUPPLY   = "0x18160ddd";
+    const PRE_BURN_WEI  = 0n; // no offset needed — reading both burn addresses directly
 
-    const [deadRes, supplyRes] = await Promise.all([
-      ethCall(CONFIG.ICB_TOKEN, BALANCEOF   + padAddr(DEAD)),
+    const DEAD_ADDR = "0x000000000000000000000000000000000000dEaD";
+
+    const [burnRes, deadRes, supplyRes] = await Promise.all([
+      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ICB_BURN_ADDR)), // 0x369 (pre-IBB burns)
+      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(DEAD_ADDR)),      // 0xdead (IBB burns)
       ethCall(CONFIG.ICB_TOKEN, TOTALSUPPLY),
     ]);
-    if (!deadRes || deadRes.length < 10) return;
+    if (!burnRes || burnRes.length < 10) return;
 
-    const deadWei   = u256(deadRes, 0);
+    const burnWei   = u256(burnRes, 0);
+    const deadWei2  = deadRes && deadRes.length > 10 ? u256(deadRes, 0) : 0n;
+    const deadWei   = burnWei + deadWei2; // total burned = 0x369 + 0xdead
     const supplyWei = supplyRes && supplyRes.length > 10 ? u256(supplyRes, 0) : 0n;
+
+    console.log("ICB dead wallet wei:", deadWei.toString());
+    console.log("ICB total supply wei:", supplyWei.toString());
+    console.log("PRE_BURN_WEI:", PRE_BURN_WEI.toString());
 
     // Subtract pre-burn in wei before converting to avoid precision loss
     const ibbBurnedWei = deadWei > PRE_BURN_WEI ? deadWei - PRE_BURN_WEI : 0n;
 
     // Convert using BigInt division to preserve precision
-    // Divide by 1e15 first (keeping 3 decimal places), then divide remaining 1e3
     const ibbBurned   = Number(ibbBurnedWei / (10n ** 15n)) / 1000;
     const totalSupply = Number(supplyWei     / (10n ** 15n)) / 1000;
     const pctBurned   = totalSupply > 0 ? ((ibbBurned / totalSupply) * 100).toFixed(2) : null;
 
+    console.log("ibbBurned:", ibbBurned, "totalSupply:", totalSupply, "pct:", pctBurned);
+
     setEl("m-burned", fmt(ibbBurned) + " ICB");
 
-    let sub = "";
-    if (icbPriceUSD > 0) sub += "≈ $" + fmt(ibbBurned * icbPriceUSD) + " USD";
-    if (pctBurned)       sub += (sub ? " · " : "") + pctBurned + "% of supply";
-    if (sub) setEl("m-burned-usd", sub);
+    if (icbPriceUSD > 0)
 
-    // Update supply donut chart — use full dead wallet balance (not just IBB burns)
+
+    // Update supply donut chart — use full 0x369 burn address balance
     updateSupplyChart(Number(deadWei / (10n ** 15n)) / 1000, totalSupply);
   } catch (e) { console.warn("loadICBBurned:", e); }
 }
