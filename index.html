@@ -248,9 +248,9 @@ async function getBlock() {
 
 // precomputed selectors
 const SEL = {
-  poolStats:      "0xe8a3d485",
-  pendingBurnPLS: "0x48a5e7e7",
-  myStats:        "0x6a44a520",
+  poolStats:       "0xe8a3d485",
+  pendingBurnPLS:  "0x48a5e7e7",
+  getPaidDividends:"0x3cbf8a61",
 };
 
 function padAddr(a) { return "000000000000000000000000" + a.replace("0x","").toLowerCase(); }
@@ -614,59 +614,17 @@ async function lookupWallet() {
   const ldEl  = document.getElementById("wallet-loading");
   if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) { errEl.textContent = "Enter a valid 0x address."; return; }
   errEl.textContent = ""; resEl.style.display = "none"; ldEl.style.display = "block";
-
-  const distrib = CONFIG.DISTRIBUTOR.toLowerCase();
-
   try {
-    let totalPLS = 0;
-    let txCount  = 0;
-    let nextPage = null;
-    let pageNum  = 0;
-    // Track tx hashes already counted to avoid double-counting
-    // when distributor fires multiple internal txs in same transaction
-    const seenTxHashes = new Set();
-
-    do {
-      let url = `https://api.scan.pulsechain.com/api/v2/addresses/${addr}/internal-transactions?limit=100`;
-      if (nextPage) url += "&" + new URLSearchParams(nextPage).toString();
-
-      setEl("idx-status", `Loading rewards page ${++pageNum}…`);
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error("API error " + resp.status);
-      const data = await resp.json();
-
-      const txs = data.items || [];
-      for (const tx of txs) {
-        const to   = (tx.to?.hash   || "").toLowerCase();
-        const from = (tx.from?.hash || "").toLowerCase();
-        const val  = tx.value || "0";
-        const hash = tx.transaction_hash || "";
-
-        // Only count inbound transfers from distributor
-        // AND only count each tx hash once (dedup double-sends in same tx)
-        if (
-          to === addr.toLowerCase() &&
-          from === distrib &&
-          BigInt(val) > 0n &&
-          !seenTxHashes.has(hash)
-        ) {
-          seenTxHashes.add(hash);
-          totalPLS += Number(BigInt(val)) / 1e18;
-          txCount++;
-        }
-      }
-
-      nextPage = data.next_page_params || null;
-    } while (nextPage);
-
-    if (totalPLS === 0) {
-      errEl.textContent = "No PLS rewards found from the IBB distributor for this wallet.";
+    // Call getPaidDividends(address) directly on the distributor contract
+    const result = await ethCall(CONFIG.DISTRIBUTOR, SEL.getPaidDividends + padAddr(addr));
+    if (!result || result.length < 10) throw new Error("No data");
+    const paid = toEth(u256(result, 0));
+    if (paid === 0) {
+      errEl.textContent = "No rewards found for this wallet.";
       return;
     }
-
-    setEl("w-paid", fmt(totalPLS, 4) + " PLS (" + txCount + " payments)");
+    setEl("w-paid", fmt(paid, 4) + " PLS");
     resEl.style.display = "block";
-
   } catch(e) {
     errEl.textContent = "Could not fetch: " + e.message;
   } finally {
