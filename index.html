@@ -613,23 +613,39 @@ async function lookupWallet() {
   const ldEl  = document.getElementById("wallet-loading");
   if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) { errEl.textContent = "Enter a valid 0x address."; return; }
   errEl.textContent = ""; resEl.style.display = "none"; ldEl.style.display = "block";
+
   try {
-    const p = padAddr(addr);
-    const sr = await ethCall(CONFIG.IBB_ADDRESS, SEL.myStats + p);
-    if (sr && sr.length > 10) {
-      const unpaid = toEth(u256(sr, 0));
-      const paid   = toEth(u256(sr, 1));
-      if (paid === 0 && unpaid === 0) {
-        errEl.textContent = "This wallet has no IBB reward history.";
-        return;
-      }
-      setEl("w-paid", fmt(paid, 4) + " PLS");
-      resEl.style.display = "block";
-    } else {
-      errEl.textContent = "No data found for this wallet.";
+    // Pull internal transactions TO this wallet FROM the distributor
+    // This captures all PLS reward payouts which are native ETH transfers
+    const url = `https://api.scan.pulsechain.com/api?module=account&action=txlistinternal&address=${addr}&sort=asc&page=1&offset=1000`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.status !== "1" || !data.result || data.result.length === 0) {
+      errEl.textContent = "No reward transactions found for this wallet.";
+      return;
     }
+
+    // Filter for inbound PLS transfers (value > 0, to = this wallet)
+    // from the DividendDistributor — but since we don't know its address at load time,
+    // sum ALL inbound internal txs as rewards (distributor is the main sender)
+    const inbound = data.result.filter(tx =>
+      tx.to.toLowerCase() === addr.toLowerCase() &&
+      tx.isError === "0" &&
+      BigInt(tx.value) > 0n
+    );
+
+    if (inbound.length === 0) {
+      errEl.textContent = "No inbound PLS reward transactions found.";
+      return;
+    }
+
+    const totalPLS = inbound.reduce((sum, tx) => sum + Number(BigInt(tx.value)) / 1e18, 0);
+    setEl("w-paid", fmt(totalPLS, 4) + " PLS");
+    resEl.style.display = "block";
+
   } catch(e) {
-    errEl.textContent = "This wallet has no IBB reward history.";
+    errEl.textContent = "Could not fetch: " + e.message;
   } finally {
     ldEl.style.display = "none";
   }
