@@ -192,7 +192,7 @@
 
   <!-- burn history chart -->
   <div class="card">
-    <div class="card-title">Total ICB burned over time</div>
+    <div class="card-title">Total ICB Burned</div>
     <div id="chart-wrap">
       <canvas id="mainChart" aria-label="IBB burn history chart"></canvas>
     </div>
@@ -378,15 +378,20 @@ async function detectDeployBlock() {
 }
 
 async function loadBurnsJSON() {
-  // Try to load pre-built burns.json from GitHub repo (same folder as index.html)
   try {
-    const resp = await fetch("burns.json?t=" + Math.floor(Date.now()/60000));
-    if (!resp.ok) return false;
+    setEl("idx-status", "Fetching burns.json…");
+    const url = window.location.href.replace(/\/[^/]*$/, "/") + "burns.json?t=" + Math.floor(Date.now()/60000);
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      setEl("idx-status", "burns.json not found (" + resp.status + ") — scanning from chain…");
+      return false;
+    }
     const d = await resp.json();
-    if (!d.meta || !d.events) return false;
+    if (!d.meta || !d.events || !d.events.length) {
+      setEl("idx-status", "burns.json empty — scanning from chain…");
+      return false;
+    }
 
-    // Merge JSON events into IDX (skip duplicates)
-    let added = 0;
     for (const ev of d.events) {
       if (IDX.events.find(e => e.tx === ev.tx)) continue;
       const pls = BigInt(ev.pls);
@@ -394,19 +399,17 @@ async function loadBurnsJSON() {
       IDX.events.push({ block: ev.block, tx: ev.tx, pls, icb });
       IDX.totalPLS += pls;
       IDX.totalICB += icb;
-      added++;
     }
     if (d.meta.lastBlock > IDX.lastBlock) IDX.lastBlock = d.meta.lastBlock;
     IDX.events.sort((a,b) => b.block - a.block);
 
-    console.log(`burns.json loaded: ${d.events.length} events, last block #${d.meta.lastBlock}`);
-    setEl("idx-status", `${IDX.events.length} events from burns.json · checking for new blocks…`);
+    setEl("idx-status", IDX.events.length + " events loaded · catching up new blocks…");
     document.getElementById("idx-prog").style.width = "80%";
     updateBurnMetric();
     updateChart();
     return true;
   } catch(e) {
-    console.log("burns.json not found, falling back to live indexer");
+    setEl("idx-status", "burns.json error: " + e.message + " — scanning from chain…");
     return false;
   }
 }
@@ -614,11 +617,22 @@ async function lookupWallet() {
     const p = padAddr(addr);
     const sr = await ethCall(CONFIG.IBB_ADDRESS, SEL.myStats + p);
     if (sr && sr.length > 10) {
-      setEl("w-paid", fmt(toEth(u256(sr,1)),4) + " PLS");
+      const unpaid = toEth(u256(sr, 0));
+      const paid   = toEth(u256(sr, 1));
+      if (paid === 0 && unpaid === 0) {
+        errEl.textContent = "This wallet has no IBB reward history.";
+        return;
+      }
+      setEl("w-paid", fmt(paid, 4) + " PLS");
+      resEl.style.display = "block";
+    } else {
+      errEl.textContent = "No data found for this wallet.";
     }
-    resEl.style.display = "block";
-  } catch(e) { errEl.textContent = "Could not fetch: " + e.message; }
-  finally { ldEl.style.display = "none"; }
+  } catch(e) {
+    errEl.textContent = "This wallet has no IBB reward history.";
+  } finally {
+    ldEl.style.display = "none";
+  }
 }
 
 // ═══════════════════════════════════════════════════════
