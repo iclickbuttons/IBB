@@ -420,65 +420,78 @@ async function runIndexer() {
   try {
     const tip = await getBlock();
 
-    // Step 1: load burns.json if we don't already have cached data
+    // Step 1: load burns.json if no local cache
     if (IDX.lastBlock === 0) {
+      setEl("idx-status", "Loading burns.json…");
       await loadBurnsJSON();
     }
 
-    // Step 2: only scan blocks newer than what we already have
-    if (!CONFIG.DEPLOY_BLOCK) { setEl("idx-status", "Detecting deploy block…"); await detectDeployBlock(); }
-    const from = IDX.lastBlock > 0 ? IDX.lastBlock + 1 : CONFIG.DEPLOY_BLOCK;
+    // Step 2: only scan blocks we haven't seen yet
+    const from = IDX.lastBlock > 0 ? IDX.lastBlock + 1 : null;
 
-    if (from > tip) {
+    if (!from) {
+      // burns.json missing and no cache — full scan needed
+      setEl("idx-status", "No burns.json — detecting deploy block…");
+      await detectDeployBlock();
+      await scanBlocks(CONFIG.DEPLOY_BLOCK || 21000000, tip, dot);
+    } else if (from > tip) {
       dot.className = "idx-dot done";
       setEl("idx-status", IDX.events.length + " burn events · up to date");
       document.getElementById("idx-prog").style.width = "100%";
-      IDX.running = false;
-      return;
+    } else {
+      const newBlocks = (tip - from).toLocaleString();
+      setEl("idx-status", "Catching up " + newBlocks + " new blocks…");
+      await scanBlocks(from, tip, dot);
     }
-
-    const total = tip - from;
-    const newBlocksLabel = total.toLocaleString() + " new blocks";
-    let scanned = 0, cursor = from;
-
-    while (cursor <= tip) {
-      const to  = Math.min(cursor + CONFIG.CHUNK_SIZE - 1, tip);
-      const pct = total > 0 ? Math.round((scanned / total) * 100) : 100;
-      setEl("idx-status", `Scanning ${newBlocksLabel} (${pct}%)…`);
-      document.getElementById("idx-prog").style.width = Math.round(80 + pct * 0.2) + "%";
-
-      try {
-        const logs = await rpc("eth_getLogs", [{ fromBlock:"0x"+cursor.toString(16), toBlock:"0x"+to.toString(16), address: CONFIG.IBB_ADDRESS, topics:[BURN_TOPIC] }]);
-        for (const log of (logs || [])) {
-          if (!log.data || log.data.length < 130) continue;
-          if (IDX.events.find(e => e.tx === log.transactionHash)) continue;
-          const pls = u256(log.data, 0);
-          const icb = u256(log.data, 1);
-          IDX.events.push({ block: parseInt(log.blockNumber, 16), tx: log.transactionHash, pls, icb });
-          IDX.totalPLS += pls;
-          IDX.totalICB += icb;
-        }
-      } catch(_) {}
-
-      scanned += (to - cursor + 1);
-      cursor = to + 1;
-      await new Promise(r => setTimeout(r, 40));
-    }
-
-    IDX.lastBlock = tip;
-    IDX.events.sort((a,b) => b.block - a.block);
-    saveCache();
-    dot.className = "idx-dot done";
-    setEl("idx-status", IDX.events.length + " burn events · block #" + tip.toLocaleString());
-    document.getElementById("idx-prog").style.width = "100%";
-    updateBurnMetric();
-    updateChart();
 
   } catch(e) {
     dot.className = "idx-dot";
     setEl("idx-status", "Error: " + e.message);
   }
   IDX.running = false;
+}
+
+async function scanBlocks(from, tip, dot) {
+  const total = tip - from;
+  let scanned = 0, cursor = from;
+
+  while (cursor <= tip) {
+    const to  = Math.min(cursor + 2000 - 1, tip);
+    const pct = total > 0 ? Math.round((scanned / total) * 100) : 100;
+    setEl("idx-status", "Scanning new blocks… " + pct + "% (" + IDX.events.length + " events)");
+    document.getElementById("idx-prog").style.width = Math.min(100, pct) + "%";
+
+    try {
+      const logs = await rpc("eth_getLogs", [{
+        fromBlock: "0x" + cursor.toString(16),
+        toBlock:   "0x" + to.toString(16),
+        address:   CONFIG.IBB_ADDRESS,
+        topics:    [BURN_TOPIC]
+      }]);
+      for (const log of (logs || [])) {
+        if (!log.data || log.data.length < 130) continue;
+        if (IDX.events.find(e => e.tx === log.transactionHash)) continue;
+        const pls = u256(log.data, 0);
+        const icb = u256(log.data, 1);
+        IDX.events.push({ block: parseInt(log.blockNumber, 16), tx: log.transactionHash, pls, icb });
+        IDX.totalPLS += pls;
+        IDX.totalICB += icb;
+      }
+    } catch(_) {}
+
+    scanned += (to - cursor + 1);
+    cursor = to + 1;
+    await new Promise(r => setTimeout(r, 40));
+  }
+
+  IDX.lastBlock = tip;
+  IDX.events.sort((a,b) => b.block - a.block);
+  saveCache();
+  if (dot) dot.className = "idx-dot done";
+  setEl("idx-status", IDX.events.length + " burn events · block #" + tip.toLocaleString());
+  document.getElementById("idx-prog").style.width = "100%";
+  updateBurnMetric();
+  updateChart();
 }
 
 // store icb price for USD calc
