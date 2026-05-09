@@ -140,6 +140,7 @@
     <div class="metric">
       <div class="metric-lbl">🔥 ICB Burned</div>
       <div class="metric-val fire" id="m-burned">—</div>
+      <div class="metric-sub" id="m-burned-usd"></div>
     </div>
     <div class="metric">
       <div class="metric-lbl">👥 Holders</div>
@@ -148,6 +149,7 @@
     <div class="metric">
       <div class="metric-lbl">✅ Rewards Paid</div>
       <div class="metric-val teal" id="m-paid">—</div>
+      <div class="metric-sub" id="m-paid-usd"></div>
     </div>
   </div>
 
@@ -333,13 +335,26 @@ async function loadICBBurned() {
 
     console.log("ibbBurned:", ibbBurned, "totalSupply:", totalSupply, "pct:", pctBurned);
 
+    // ICB burned metric + USD value
     setEl("m-burned", fmt(burnedDead) + " ICB");
-
     if (icbPriceUSD > 0)
+      setEl("m-burned-usd", "≈ $" + fmt(burnedDead * icbPriceUSD) + " USD");
 
+    // Rewards paid USD value
+    try {
+      const pRes = await ethCall(CONFIG.DISTRIBUTOR, SEL.getTotalDistributed);
+      if (pRes && pRes.length > 10) {
+        const plsPaid = Number(u256(pRes, 0) / (10n ** 15n)) / 1000;
+        // fetch PLS price from DexScreener for USD conversion
+        const plsData = await fetchPrice("0xa1077a294dde1b09bb078844df40758a5d0f9a27");
+        const plsPrice = parseFloat(plsData?.priceUsd || 0);
+        if (plsPrice > 0)
+          setEl("m-paid-usd", "≈ $" + fmt(plsPaid * plsPrice) + " USD");
+      }
+    } catch(_) {}
 
-    // Update supply donut chart — use full 0x369 burn address balance
-    updateSupplyChart(Number(deadWei / (10n ** 15n)) / 1000, totalSupply);
+    // 3-slice donut chart
+    updateSupplyChart(burned369, burnedDead, totalSupply);
   } catch (e) { console.warn("loadICBBurned:", e); }
 }
 
