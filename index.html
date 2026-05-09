@@ -302,59 +302,47 @@ async function loadPoolStats() {
 
 async function loadICBBurned() {
   try {
-    const ICB_BURN_ADDR = "0x0000000000000000000000000000000000000369";
-    const BALANCEOF     = "0x70a08231";
-    const TOTALSUPPLY   = "0x18160ddd";
-    const PRE_BURN_WEI  = 0n; // no offset needed — reading both burn addresses directly
+    const ADDR_369  = "0x0000000000000000000000000000000000000369";
+    const ADDR_DEAD = "0x000000000000000000000000000000000000dEaD";
+    const BALANCEOF   = "0x70a08231";
+    const TOTALSUPPLY = "0x18160ddd";
 
-    const DEAD_ADDR = "0x000000000000000000000000000000000000dEaD";
-
-    const [burnRes, deadRes, supplyRes] = await Promise.all([
-      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ICB_BURN_ADDR)), // 0x369 (pre-IBB burns)
-      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(DEAD_ADDR)),      // 0xdead (IBB burns)
+    const [res369, resDead, supplyRes] = await Promise.all([
+      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ADDR_369)),
+      ethCall(CONFIG.ICB_TOKEN, BALANCEOF + padAddr(ADDR_DEAD)),
       ethCall(CONFIG.ICB_TOKEN, TOTALSUPPLY),
     ]);
-    if (!burnRes || burnRes.length < 10) return;
+    if (!res369 || res369.length < 10) return;
 
-    const burnWei   = u256(burnRes, 0);
-    const deadWei2  = deadRes && deadRes.length > 10 ? u256(deadRes, 0) : 0n;
-    const deadWei   = burnWei + deadWei2; // total burned = 0x369 + 0xdead
-    const supplyWei = supplyRes && supplyRes.length > 10 ? u256(supplyRes, 0) : 0n;
+    const wei369     = u256(res369, 0);
+    const weiDead    = resDead    && resDead.length    > 10 ? u256(resDead, 0)    : 0n;
+    const supplyWei  = supplyRes  && supplyRes.length  > 10 ? u256(supplyRes, 0)  : 0n;
 
-    console.log("ICB dead wallet wei:", deadWei.toString());
-    console.log("ICB total supply wei:", supplyWei.toString());
-    console.log("PRE_BURN_WEI:", PRE_BURN_WEI.toString());
+    // Convert with BigInt precision (divide by 1e15 then /1000 = divide by 1e18)
+    const burned369   = Number(wei369    / (10n ** 15n)) / 1000;
+    const burnedDead  = Number(weiDead   / (10n ** 15n)) / 1000;
+    const totalSupply = Number(supplyWei / (10n ** 15n)) / 1000;
 
-    // Subtract pre-burn in wei before converting to avoid precision loss
-    const ibbBurnedWei = deadWei > PRE_BURN_WEI ? deadWei - PRE_BURN_WEI : 0n;
-
-    // Convert using BigInt division to preserve precision
-    const ibbBurned   = Number(ibbBurnedWei / (10n ** 15n)) / 1000;
-    const totalSupply = Number(supplyWei     / (10n ** 15n)) / 1000;
-    const pctBurned   = totalSupply > 0 ? ((ibbBurned / totalSupply) * 100).toFixed(2) : null;
-
-    console.log("ibbBurned:", ibbBurned, "totalSupply:", totalSupply, "pct:", pctBurned);
-
-    // ICB burned metric + USD value
+    // ICB burned metric = only what IBB sent to 0xdead
     setEl("m-burned", fmt(burnedDead) + " ICB");
     if (icbPriceUSD > 0)
       setEl("m-burned-usd", "≈ $" + fmt(burnedDead * icbPriceUSD) + " USD");
 
-    // Rewards paid USD value
+    // Rewards paid USD subtext
     try {
       const pRes = await ethCall(CONFIG.DISTRIBUTOR, SEL.getTotalDistributed);
       if (pRes && pRes.length > 10) {
-        const plsPaid = Number(u256(pRes, 0) / (10n ** 15n)) / 1000;
-        // fetch PLS price from DexScreener for USD conversion
-        const plsData = await fetchPrice("0xa1077a294dde1b09bb078844df40758a5d0f9a27");
+        const plsPaid  = Number(u256(pRes, 0) / (10n ** 15n)) / 1000;
+        const plsData  = await fetchPrice("0xa1077a294dde1b09bb078844df40758a5d0f9a27");
         const plsPrice = parseFloat(plsData?.priceUsd || 0);
         if (plsPrice > 0)
           setEl("m-paid-usd", "≈ $" + fmt(plsPaid * plsPrice) + " USD");
       }
     } catch(_) {}
 
-    // 3-slice donut chart
+    // 3-slice donut: pre-IBB burns | IBB burns | circulating
     updateSupplyChart(burned369, burnedDead, totalSupply);
+
   } catch (e) { console.warn("loadICBBurned:", e); }
 }
 
