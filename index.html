@@ -153,6 +153,19 @@
     </div>
   </div>
 
+  <!-- ICB supply burn chart -->
+  <div class="card" id="supply-card">
+    <div class="card-title">ICB Burned vs Total Supply</div>
+    <div style="position:relative;width:100%;height:180px;margin-top:4px;">
+      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart">ICB burn vs supply chart</canvas>
+    </div>
+    <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:14px;font-family:var(--mono);font-size:12px;">
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#e8632a;display:inline-block;"></span><span style="color:var(--text2)">Burned</span><span id="sc-burned-pct" style="color:var(--orange)">—</span></span>
+      <span style="display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:#2acba8;display:inline-block;"></span><span style="color:var(--text2)">Circulating</span><span id="sc-circ-pct" style="color:var(--teal)">—</span></span>
+    </div>
+    <div style="text-align:center;font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:8px;" id="sc-supply-label"></div>
+  </div>
+
   <div class="card">
     <div class="card-title">My wallet</div>
     <div class="wallet-row">
@@ -290,10 +303,10 @@ async function loadPoolStats() {
 
 async function loadICBBurned() {
   try {
-    const DEAD       = "0x000000000000000000000000000000000000dead";
-    const BALANCEOF  = "0x70a08231";
-    const TOTALSUPPLY= "0x18160ddd";
-    const PRE_BURN   = 51000; // ICB burned before IBB deployed
+    const DEAD        = "0x000000000000000000000000000000000000dead";
+    const BALANCEOF   = "0x70a08231";
+    const TOTALSUPPLY = "0x18160ddd";
+    const PRE_BURN_WEI = 51000n * (10n ** 18n); // 51000 ICB in wei as BigInt
 
     const [deadRes, supplyRes] = await Promise.all([
       ethCall(CONFIG.ICB_TOKEN, BALANCEOF   + padAddr(DEAD)),
@@ -301,10 +314,17 @@ async function loadICBBurned() {
     ]);
     if (!deadRes || deadRes.length < 10) return;
 
-    const deadBalance  = toEth(u256(deadRes, 0));
-    const totalSupply  = supplyRes && supplyRes.length > 10 ? toEth(u256(supplyRes, 0)) : 0;
-    const ibbBurned    = Math.max(0, deadBalance - PRE_BURN);
-    const pctBurned    = totalSupply > 0 ? ((ibbBurned / totalSupply) * 100).toFixed(2) : null;
+    const deadWei   = u256(deadRes, 0);
+    const supplyWei = supplyRes && supplyRes.length > 10 ? u256(supplyRes, 0) : 0n;
+
+    // Subtract pre-burn in wei before converting to avoid precision loss
+    const ibbBurnedWei = deadWei > PRE_BURN_WEI ? deadWei - PRE_BURN_WEI : 0n;
+
+    // Convert using BigInt division to preserve precision
+    // Divide by 1e15 first (keeping 3 decimal places), then divide remaining 1e3
+    const ibbBurned   = Number(ibbBurnedWei / (10n ** 15n)) / 1000;
+    const totalSupply = Number(supplyWei     / (10n ** 15n)) / 1000;
+    const pctBurned   = totalSupply > 0 ? ((ibbBurned / totalSupply) * 100).toFixed(2) : null;
 
     setEl("m-burned", fmt(ibbBurned) + " ICB");
 
@@ -312,6 +332,9 @@ async function loadICBBurned() {
     if (icbPriceUSD > 0) sub += "≈ $" + fmt(ibbBurned * icbPriceUSD) + " USD";
     if (pctBurned)       sub += (sub ? " · " : "") + pctBurned + "% of supply";
     if (sub) setEl("m-burned-usd", sub);
+
+    // Update supply donut chart — use full dead wallet balance (not just IBB burns)
+    updateSupplyChart(Number(deadWei / (10n ** 15n)) / 1000, totalSupply);
   } catch (e) { console.warn("loadICBBurned:", e); }
 }
 
@@ -328,6 +351,7 @@ async function loadICBBurned() {
 
 // ── CHART ─────────────────────────────────────────────
 let chart = null;
+let supplyChart = null;
 
 function updateChart() {
   if (chart) chart.destroy();
@@ -341,6 +365,49 @@ function updateChart() {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { backgroundColor: "#17171a", borderColor: "#333", borderWidth: 1, titleColor: "#8a8880", bodyColor: "#e8632a", callbacks: { title: () => "", label: ctx => fmt(ctx.parsed.y) + " ICB burned" } } },
       scales: { x: { grid: { display: false }, ticks: { color: "#55534f", font: { size: 10 }, maxTicksLimit: 4 } }, y: { grid: { color: "rgba(255,255,255,0.04)" }, ticks: { color: "#55534f", font: { size: 10 }, callback: v => fmt(v) }, beginAtZero: true } }
+    }
+  });
+}
+
+function updateSupplyChart(burned, totalSupply) {
+  if (!burned || !totalSupply) return;
+  const circulating = Math.max(0, totalSupply - burned);
+  const burnedPct   = ((burned / totalSupply) * 100).toFixed(2);
+  const circPct     = (100 - parseFloat(burnedPct)).toFixed(2);
+
+  setEl("sc-burned-pct", burnedPct + "%");
+  setEl("sc-circ-pct",   circPct + "%");
+  setEl("sc-supply-label", "Total supply: " + fmt(totalSupply) + " ICB");
+
+  if (supplyChart) supplyChart.destroy();
+  supplyChart = new Chart(document.getElementById("supplyChart").getContext("2d"), {
+    type: "doughnut",
+    data: {
+      labels: ["Burned", "Circulating"],
+      datasets: [{
+        data: [burned, circulating],
+        backgroundColor: ["#e8632a", "#2acba8"],
+        borderColor: ["#17171a", "#17171a"],
+        borderWidth: 3,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "70%",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#17171a",
+          borderColor: "#333",
+          borderWidth: 1,
+          titleColor: "#8a8880",
+          callbacks: {
+            label: ctx => fmt(ctx.parsed) + " ICB (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
+          }
+        }
+      }
     }
   });
 }
