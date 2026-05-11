@@ -278,7 +278,7 @@
       </div>
       <div class="donut-legend-item">
         <span class="donut-legend-dot" style="background:#E86000;"></span>
-        <span style="color:var(--text2)">IBB Burned</span>
+        <span style="color:var(--text2)">ICB Burned</span>
         <span id="leg-ibb" style="color:#E86000">—</span>
       </div>
       <div class="donut-legend-item">
@@ -361,7 +361,7 @@ function updateSupplyChart(b369,bDead,total) {
   if(supplyChart){supplyChart.destroy();supplyChart=null;}
   const ctx=document.getElementById("supplyChart");
   if(!ctx)return;
-  supplyChart=new Chart(ctx.getContext("2d"),{type:"doughnut",data:{labels:["Pre-IBB Burned","IBB Burned","Circulating"],datasets:[{data:[b369,bDead,circ],backgroundColor:["#00C9A7","#E86000","#8800FF"],borderColor:["#111113","#111113","#111113"],borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{backgroundColor:"#17171a",borderColor:"#333",borderWidth:1,titleColor:"#8a8880",bodyColor:"#f0ede8",callbacks:{label:c=>{const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":""; return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;}}}}}});
+  supplyChart=new Chart(ctx.getContext("2d"),{type:"doughnut",data:{labels:["Pre-IBB Burned","ICB Burned","Circulating"],datasets:[{data:[b369,bDead,circ],backgroundColor:["#00C9A7","#E86000","#8800FF"],borderColor:["#111113","#111113","#111113"],borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{backgroundColor:"#17171a",borderColor:"#333",borderWidth:1,titleColor:"#8a8880",bodyColor:"#f0ede8",callbacks:{label:c=>{const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":""; return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;}}}}}});
 }
 async function lookupWallet() {
   const addr=document.getElementById("wallet-addr").value.trim();
