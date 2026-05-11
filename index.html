@@ -19,7 +19,7 @@
     --orange:      #e8632a;
     --orange-dim:  rgba(232,99,42,0.15);
     --teal:        #2acba8;
-    --purple:      #0066FF;
+    --purple:      #8800FF;
     --red:         #e83a3a;
     --mono:        'Space Mono', monospace;
     --sans:        'DM Sans', sans-serif;
@@ -182,13 +182,13 @@
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <radialGradient id="icb-bg" cx="50%" cy="40%" r="60%">
-                <stop offset="0%" stop-color="#001A3A"/>
-                <stop offset="100%" stop-color="#000510"/>
+                <stop offset="0%" stop-color="#1A0038"/>
+                <stop offset="100%" stop-color="#080010"/>
               </radialGradient>
               <radialGradient id="icb-face" cx="38%" cy="28%" r="72%">
-                <stop offset="0%" stop-color="#80C8FF"/>
-                <stop offset="45%" stop-color="#0066FF"/>
-                <stop offset="100%" stop-color="#0033AA"/>
+                <stop offset="0%" stop-color="#CC80FF"/>
+                <stop offset="45%" stop-color="#8800FF"/>
+                <stop offset="100%" stop-color="#4400AA"/>
               </radialGradient>
               <radialGradient id="icb-shine" cx="38%" cy="22%" r="45%">
                 <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
@@ -196,11 +196,11 @@
               </radialGradient>
               <clipPath id="icb-clip"><circle cx="50" cy="50" r="47"/></clipPath>
             </defs>
-            <circle cx="50" cy="50" r="50" fill="#000510"/>
+            <circle cx="50" cy="50" r="50" fill="#080010"/>
             <circle cx="50" cy="50" r="47" fill="url(#icb-bg)"/>
-            <circle cx="50" cy="50" r="48.5" fill="none" stroke="#0066FF" stroke-width="3.5"/>
+            <circle cx="50" cy="50" r="48.5" fill="none" stroke="#8800FF" stroke-width="3.5"/>
             <g clip-path="url(#icb-clip)">
-              <circle cx="50" cy="50" r="38" fill="#001028"/>
+              <circle cx="50" cy="50" r="38" fill="#100028"/>
               <circle cx="50" cy="50" r="34" fill="url(#icb-face)"/>
               <circle cx="50" cy="50" r="34" fill="url(#icb-shine)"/>
               <g transform="translate(42, 38)">
@@ -271,19 +271,19 @@
     </div>
     <div class="donut-legend">
       <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#e85a2a;"></span>
+        <span class="donut-legend-dot" style="background:#00C9A7;"></span>
         <span style="color:var(--text2)">Pre-IBB</span>
-        <span id="leg-pre" style="color:#e85a2a">—</span>
+        <span id="leg-pre" style="color:#00C9A7">—</span>
       </div>
       <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#e8a02a;"></span>
+        <span class="donut-legend-dot" style="background:#E86000;"></span>
         <span style="color:var(--text2)">IBB Burned</span>
-        <span id="leg-ibb" style="color:#e8a02a">—</span>
+        <span id="leg-ibb" style="color:#E86000">—</span>
       </div>
       <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#0066FF;"></span>
+        <span class="donut-legend-dot" style="background:#8800FF;"></span>
         <span style="color:var(--text2)">Circulating</span>
-        <span id="leg-circ" style="color:var(--purple)">—</span>
+        <span id="leg-circ" style="color:#8800FF">—</span>
       </div>
     </div>
     <div class="donut-supply-label" id="leg-supply"></div>
@@ -360,7 +360,7 @@ function updateSupplyChart(b369,bDead,total) {
   if(supplyChart){supplyChart.destroy();supplyChart=null;}
   const ctx=document.getElementById("supplyChart");
   if(!ctx)return;
-  supplyChart=new Chart(ctx.getContext("2d"),{type:"doughnut",data:{labels:["Pre-IBB Burned","IBB Burned","Circulating"],datasets:[{data:[b369,bDead,circ],backgroundColor:["#e85a2a","#e8a02a","#0066FF"],borderColor:["#111113","#111113","#111113"],borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{backgroundColor:"#17171a",borderColor:"#333",borderWidth:1,titleColor:"#8a8880",bodyColor:"#f0ede8",callbacks:{label:c=>{const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":""; return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;}}}}}});
+  supplyChart=new Chart(ctx.getContext("2d"),{type:"doughnut",data:{labels:["Pre-IBB Burned","IBB Burned","Circulating"],datasets:[{data:[b369,bDead,circ],backgroundColor:["#00C9A7","#E86000","#8800FF"],borderColor:["#111113","#111113","#111113"],borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{backgroundColor:"#17171a",borderColor:"#333",borderWidth:1,titleColor:"#8a8880",bodyColor:"#f0ede8",callbacks:{label:c=>{const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":""; return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;}}}}}});
 }
 async function lookupWallet() {
   const addr=document.getElementById("wallet-addr").value.trim();
