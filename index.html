@@ -7,7 +7,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500&display=swap');
-
   :root {
     --bg:          #0a0a0b;
     --bg2:         #111113;
@@ -20,17 +19,15 @@
     --orange:      #e8632a;
     --orange-dim:  rgba(232,99,42,0.15);
     --teal:        #2acba8;
+    --purple:      #0066FF;
     --red:         #e83a3a;
     --mono:        'Space Mono', monospace;
     --sans:        'DM Sans', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { background: var(--bg); color: var(--text); font-family: var(--sans); }
   body { min-height: 100vh; }
   .shell { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
-
-  /* ── header ── */
   .header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 1rem; gap: 10px; }
   .live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--mono); background: rgba(42,203,168,0.08); color: var(--teal); border: 1px solid rgba(42,203,168,0.18); border-radius: 20px; padding: 4px 11px; }
   .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: pulse 1.8s infinite; }
@@ -38,18 +35,20 @@
   .btn { font-family: var(--mono); font-size: 11px; background: transparent; border: 1px solid var(--border2); color: var(--text2); padding: 5px 13px; border-radius: 6px; cursor: pointer; transition: all .15s; }
   .btn:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
   .btn:disabled { opacity: .35; cursor: default; }
-
-  /* ── ticker ── */
   .ticker { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
   @media(max-width:520px){ .ticker { grid-template-columns: 1fr; } }
   .ticker-panel { background: var(--bg2); padding: 1.1rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .ticker-left { display: flex; align-items: center; gap: 11px; }
-  .ticker-logo { width: 34px; height: 34px; border-radius: 50%; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; border: 1px solid var(--border2); }
+  .ticker-logo { width: 38px; height: 38px; flex-shrink: 0; }
+  .ticker-logo svg { width: 100%; height: 100%; }
   .ticker-symbol { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text); }
   .ticker-name   { font-size: 13px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
   .ticker-right  { text-align: right; }
   .ticker-price  { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; }
-  .ticker-price.fire { color: var(--orange); }
+  .ticker-price.fire   { color: var(--orange); }
+  .ticker-price.purple { color: var(--purple); }
+  .metric-val.purple   { color: var(--purple); }
+  .w-val.purple        { color: var(--purple); }
   .ticker-price.teal { color: var(--teal); }
   .ticker-meta { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 5px; flex-wrap: wrap; }
   .ticker-change { font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 4px; }
@@ -60,8 +59,6 @@
   .ticker-ca { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 4px; }
   .ticker-ca a { color: var(--text3); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 1px; transition: color .15s; }
   .ticker-ca a:hover { color: var(--text); }
-
-  /* ── metrics ── */
   .metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.25rem; }
   @media(max-width:480px){ .metrics { grid-template-columns: 1fr; } }
   .metric { background: var(--bg2); padding: 1.25rem 1.4rem; }
@@ -70,13 +67,9 @@
   .metric-val.fire { color: var(--orange); }
   .metric-val.teal { color: var(--teal); }
   .metric-sub { font-size: 12px; color: var(--text3); margin-top: 6px; font-family: var(--mono); min-height: 18px; }
-
-  /* ── card ── */
   .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
   .card:last-child { margin-bottom: 0; }
   .card-title { font-family: var(--mono); font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--text); margin-bottom: 1rem; text-transform: uppercase; }
-
-  /* ── wallet ── */
   .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .wallet-row input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; font-family: var(--mono); color: var(--text); outline: none; transition: border-color .15s; }
   .wallet-row input:focus { border-color: var(--orange); }
@@ -92,8 +85,6 @@
   .dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--text3); margin: 0 2px; animation: blink 1.2s infinite; }
   .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
-
-  /* ── donut chart ── */
   .donut-wrap { position: relative; width: 100%; height: 200px; margin-top: 4px; }
   .donut-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: 14px; font-family: var(--mono); font-size: 12px; flex-wrap: wrap; }
   .donut-legend-item { display: flex; align-items: center; gap: 6px; }
@@ -103,18 +94,69 @@
 </head>
 <body>
 <div class="shell">
-
-  <!-- header -->
   <div class="header">
     <span class="live-pill"><span class="live-dot"></span>PulseChain</span>
     <button class="btn" id="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
   </div>
 
-  <!-- price ticker -->
   <div class="ticker">
+    <!-- IBB -->
     <div class="ticker-panel">
       <div class="ticker-left">
-        <div class="ticker-logo">🔥</div>
+        <div class="ticker-logo">
+          <svg viewBox="8 28 64 64" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="ibb-bg" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#1A0E00"/>
+                <stop offset="100%" stop-color="#080400"/>
+              </radialGradient>
+              <radialGradient id="ibb-face" cx="38%" cy="28%" r="72%">
+                <stop offset="0%" stop-color="#FF8C00"/>
+                <stop offset="55%" stop-color="#D05500"/>
+                <stop offset="100%" stop-color="#6A2000"/>
+              </radialGradient>
+              <radialGradient id="ibb-shine" cx="35%" cy="25%" r="45%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="ibb-bezel" cx="40%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#333"/>
+                <stop offset="100%" stop-color="#080808"/>
+              </radialGradient>
+              <linearGradient id="ibb-flame" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#CC2200"/>
+                <stop offset="35%" stop-color="#FF5500"/>
+                <stop offset="70%" stop-color="#FF9900"/>
+                <stop offset="100%" stop-color="#FFE000"/>
+              </linearGradient>
+              <linearGradient id="ibb-fcore" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#FF7700"/>
+                <stop offset="60%" stop-color="#FFE000"/>
+                <stop offset="100%" stop-color="#FFFFFF"/>
+              </linearGradient>
+              <radialGradient id="ibb-glow" cx="50%" cy="60%" r="55%">
+                <stop offset="0%" stop-color="#FF4400" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#FF2200" stop-opacity="0"/>
+              </radialGradient>
+              <clipPath id="ibb-clip"><circle cx="40" cy="60" r="32"/></clipPath>
+            </defs>
+            <circle cx="40" cy="60" r="32" fill="#080400"/>
+            <circle cx="40" cy="60" r="32" fill="url(#ibb-bg)"/>
+            <circle cx="40" cy="60" r="31" fill="none" stroke="#E86000" stroke-width="2.5"/>
+            <g clip-path="url(#ibb-clip)">
+              <ellipse cx="40" cy="62" rx="28" ry="30" fill="url(#ibb-glow)"/>
+              <path d="M28 72 C24 60 25 48 28 38 C29 44 30 50 32 54 C33 46 34 38 36 32 C37 40 37 50 39 56 C40 48 41 38 42 32 C44 38 45 46 46 54 C48 50 49 44 50 38 C53 48 54 60 50 72 Z" fill="url(#ibb-flame)"/>
+              <path d="M32 72 C30 62 31 52 33 44 C34 50 35 56 36 60 C37 52 38 44 40 38 C42 44 43 52 44 60 C45 56 46 50 47 44 C49 52 50 62 48 72 Z" fill="url(#ibb-fcore)" opacity="0.85"/>
+              <circle cx="40" cy="68" r="20" fill="url(#ibb-bezel)"/>
+              <circle cx="40" cy="68" r="18" fill="#0a0500"/>
+              <circle cx="40" cy="68" r="16" fill="url(#ibb-face)"/>
+              <circle cx="40" cy="68" r="16" fill="url(#ibb-shine)"/>
+              <g transform="translate(35,61)">
+                <polygon points="0,0 1,12 4,9 6,14 8,13 6,8 9,8" fill="#ffffff"/>
+              </g>
+            </g>
+          </svg>
+        </div>
         <div>
           <div class="ticker-symbol">IBB</div>
           <div class="ticker-name">I Burn Buttons</div>
@@ -131,16 +173,49 @@
         </div>
       </div>
     </div>
+
+    <!-- ICB -->
     <div class="ticker-panel">
       <div class="ticker-left">
-        <div class="ticker-logo" style="border-color:rgba(42,203,168,0.25)">💎</div>
+        <div class="ticker-logo">
+          <!-- ICB: button icon -->
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="icb-bg" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#001A3A"/>
+                <stop offset="100%" stop-color="#000510"/>
+              </radialGradient>
+              <radialGradient id="icb-face" cx="38%" cy="28%" r="72%">
+                <stop offset="0%" stop-color="#80C8FF"/>
+                <stop offset="45%" stop-color="#0066FF"/>
+                <stop offset="100%" stop-color="#0033AA"/>
+              </radialGradient>
+              <radialGradient id="icb-shine" cx="38%" cy="22%" r="45%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </radialGradient>
+              <clipPath id="icb-clip"><circle cx="50" cy="50" r="47"/></clipPath>
+            </defs>
+            <circle cx="50" cy="50" r="50" fill="#000510"/>
+            <circle cx="50" cy="50" r="47" fill="url(#icb-bg)"/>
+            <circle cx="50" cy="50" r="48.5" fill="none" stroke="#0066FF" stroke-width="3.5"/>
+            <g clip-path="url(#icb-clip)">
+              <circle cx="50" cy="50" r="38" fill="#001028"/>
+              <circle cx="50" cy="50" r="34" fill="url(#icb-face)"/>
+              <circle cx="50" cy="50" r="34" fill="url(#icb-shine)"/>
+              <g transform="translate(42, 38)">
+                <polygon points="0,0 2,20 6,16 9,24 13,22 10,14 17,14" fill="#ffffff"/>
+              </g>
+            </g>
+          </svg>
+        </div>
         <div>
           <div class="ticker-symbol">ICB</div>
           <div class="ticker-name">I Click Buttons</div>
         </div>
       </div>
       <div class="ticker-right">
-        <div class="ticker-price teal" id="icb-price">—</div>
+        <div class="ticker-price purple" id="icb-price">—</div>
         <div class="ticker-meta">
           <span class="ticker-change flat" id="icb-change">—</span>
           <span class="ticker-mcap" id="icb-mcap"></span>
@@ -166,7 +241,7 @@
     </div>
     <div class="metric">
       <div class="metric-lbl">✅ Rewards Paid</div>
-      <div class="metric-val teal" id="m-paid">—</div>
+      <div class="metric-val purple" id="m-paid">—</div>
       <div class="metric-sub" id="m-paid-usd"></div>
     </div>
   </div>
@@ -183,7 +258,7 @@
     <div id="wallet-result" style="display:none;">
       <div class="w-row">
         <span class="w-key">Total rewards earned</span>
-        <span class="w-val teal" id="w-paid">—</span>
+        <span class="w-val purple" id="w-paid">—</span>
       </div>
     </div>
   </div>
@@ -206,348 +281,112 @@
         <span id="leg-ibb" style="color:#e8a02a">—</span>
       </div>
       <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#2acba8;"></span>
+        <span class="donut-legend-dot" style="background:#0066FF;"></span>
         <span style="color:var(--text2)">Circulating</span>
-        <span id="leg-circ" style="color:var(--teal)">—</span>
+        <span id="leg-circ" style="color:var(--purple)">—</span>
       </div>
     </div>
     <div class="donut-supply-label" id="leg-supply"></div>
   </div>
-
 </div>
 <script>
-// ─────────────────────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────────────────────
 const IBB_ADDRESS  = "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E";
 const ICB_TOKEN    = "0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27";
 const DISTRIBUTOR  = "0xE3E74399bECA875EC11d8e19B002Ec46cE77e56e";
-const ICB_ADDR_369 = "0x0000000000000000000000000000000000000369"; // pre-IBB burns
-const ICB_ADDR_DEAD= "0x000000000000000000000000000000000000dEaD"; // IBB burns
+const ICB_ADDR_369 = "0x0000000000000000000000000000000000000369";
+const ICB_ADDR_DEAD= "0x000000000000000000000000000000000000dEaD";
 const WPLS         = "0xa1077a294dde1b09bb078844df40758a5d0f9a27";
 const RPC          = "https://rpc.pulsechain.com";
-
-// Verified function selectors (keccak256)
-const SEL_BALANCE    = "0x70a08231"; // balanceOf(address)
-const SEL_SUPPLY     = "0x18160ddd"; // totalSupply()
-const SEL_HOLDERS    = "0x9df62df2"; // countShareholders()
-const SEL_DISTRIB    = "0x5695fa58"; // getTotalDistributed()
-const SEL_PAID       = "0x3cbf8a61"; // getPaidDividends(address)
-
-// ─────────────────────────────────────────────────────
-// RPC HELPERS
-// ─────────────────────────────────────────────────────
+const SEL_BALANCE  = "0x70a08231";
+const SEL_SUPPLY   = "0x18160ddd";
+const SEL_HOLDERS  = "0x9df62df2";
+const SEL_DISTRIB  = "0x5695fa58";
+const SEL_PAID     = "0x3cbf8a61";
 let _reqId = 1;
 async function rpcCall(method, params = []) {
-  const resp = await fetch(RPC, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: _reqId++, method, params })
-  });
+  const resp = await fetch(RPC, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({jsonrpc:"2.0",id:_reqId++,method,params}) });
   const data = await resp.json();
   if (data.error) throw new Error(data.error.message);
   return data.result;
 }
-
-async function ethCall(to, data) {
-  return rpcCall("eth_call", [{ to, data }, "latest"]);
-}
-
-// Pad an address to 32 bytes for ABI encoding
-function padAddr(addr) {
-  return "000000000000000000000000" + addr.replace("0x", "").toLowerCase();
-}
-
-// Read a uint256 from an ABI-encoded hex response at a given slot (0-indexed)
-function readUint256(hexResponse, slot) {
-  const hex = hexResponse.startsWith("0x") ? hexResponse.slice(2) : hexResponse;
-  const chunk = hex.slice(slot * 64, slot * 64 + 64);
-  return BigInt("0x" + chunk);
-}
-
-// Convert wei (BigInt) to a regular JS number safely
-// Divides by 1e15 first (BigInt), then by 1000 (float) to avoid precision loss
-function weiToNum(weiBig) {
-  return Number(weiBig / (10n ** 15n)) / 1000;
-}
-
-// ─────────────────────────────────────────────────────
-// FORMATTING
-// ─────────────────────────────────────────────────────
-function fmt(n, dp = 2) {
-  if (n == null || isNaN(n)) return "—";
-  const a = Math.abs(n);
-  if (a >= 1e9) return (n / 1e9).toFixed(dp) + "B";
-  if (a >= 1e6) return (n / 1e6).toFixed(dp) + "M";
-  if (a >= 1e3) return (n / 1e3).toFixed(dp) + "K";
-  return n.toFixed(dp);
-}
-
-function fmtPrice(usd) {
-  const n = parseFloat(usd);
-  if (!n || isNaN(n)) return "—";
-  if (n < 0.000001) return "$" + n.toExponential(2);
-  if (n < 0.001)    return "$" + n.toFixed(7);
-  if (n < 0.01)     return "$" + n.toFixed(5);
-  if (n < 1)        return "$" + n.toFixed(4);
-  return "$" + n.toFixed(2);
-}
-
-function fmtMcap(n) {
-  if (!n || isNaN(n)) return "";
-  if (n >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M mcap";
-  if (n >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K mcap";
-  return "$" + n.toFixed(0) + " mcap";
-}
-
-function setEl(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ─────────────────────────────────────────────────────
-// PRICES — DexScreener API
-// ─────────────────────────────────────────────────────
-let icbPriceUSD = 0;
-let plsPriceUSD = 0;
-
+async function ethCall(to, data) { return rpcCall("eth_call",[{to,data},"latest"]); }
+function padAddr(addr) { return "000000000000000000000000"+addr.replace("0x","").toLowerCase(); }
+function readUint256(hex, slot) { const h = hex.startsWith("0x")?hex.slice(2):hex; return BigInt("0x"+h.slice(slot*64,slot*64+64)); }
+function weiToNum(w) { return Number(w/(10n**15n))/1000; }
+function fmt(n,dp=2) { if(n==null||isNaN(n))return"—"; const a=Math.abs(n); if(a>=1e9)return(n/1e9).toFixed(dp)+"B"; if(a>=1e6)return(n/1e6).toFixed(dp)+"M"; if(a>=1e3)return(n/1e3).toFixed(dp)+"K"; return n.toFixed(dp); }
+function fmtPrice(usd) { const n=parseFloat(usd); if(!n||isNaN(n))return"—"; if(n<0.000001)return"$"+n.toExponential(2); if(n<0.001)return"$"+n.toFixed(7); if(n<0.01)return"$"+n.toFixed(5); if(n<1)return"$"+n.toFixed(4); return"$"+n.toFixed(2); }
+function fmtMcap(n) { if(!n||isNaN(n))return""; if(n>=1e6)return"$"+(n/1e6).toFixed(2)+"M mcap"; if(n>=1e3)return"$"+(n/1e3).toFixed(1)+"K mcap"; return"$"+n.toFixed(0)+" mcap"; }
+function setEl(id,val) { const el=document.getElementById(id); if(el)el.textContent=val; }
+let icbPriceUSD=0, plsPriceUSD=0;
 async function fetchDexPrice(tokenAddr) {
-  const resp = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/" + tokenAddr);
+  const resp = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/"+tokenAddr);
   const data = await resp.json();
-  const pairs = (Array.isArray(data) ? data : data.pairs || [])
-    .filter(p => p && p.priceUsd)
-    .sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-  return pairs[0] || null;
+  const pairs = (Array.isArray(data)?data:data.pairs||[]).filter(p=>p&&p.priceUsd).sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0));
+  return pairs[0]||null;
 }
-
-function renderTicker(prefix, pair) {
-  if (!pair) return 0;
-  const price = parseFloat(pair.priceUsd || 0);
-  const pct   = parseFloat(pair.priceChange?.h24 || 0);
-  const mcap  = pair.marketCap || pair.fdv || 0;
-
-  setEl(prefix + "-price", fmtPrice(price));
-
-  const changeEl = document.getElementById(prefix + "-change");
-  if (changeEl) {
-    changeEl.textContent = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "% 24h";
-    changeEl.className = "ticker-change " + (pct > 0.1 ? "up" : pct < -0.1 ? "down" : "flat");
-  }
-
-  setEl(prefix + "-mcap", fmtMcap(mcap));
+function renderTicker(prefix,pair) {
+  if(!pair)return 0;
+  const price=parseFloat(pair.priceUsd||0), pct=parseFloat(pair.priceChange?.h24||0), mcap=pair.marketCap||pair.fdv||0;
+  setEl(prefix+"-price",fmtPrice(price));
+  const el=document.getElementById(prefix+"-change");
+  if(el){el.textContent=(pct>=0?"+":"")+pct.toFixed(2)+"% 24h"; el.className="ticker-change "+(pct>0.1?"up":pct<-0.1?"down":"flat");}
+  setEl(prefix+"-mcap",fmtMcap(mcap));
   return price;
 }
-
 async function loadPrices() {
-  const [ibbRes, icbRes, plsRes] = await Promise.allSettled([
-    fetchDexPrice(IBB_ADDRESS),
-    fetchDexPrice(ICB_TOKEN),
-    fetchDexPrice(WPLS),
-  ]);
-  if (ibbRes.status === "fulfilled") renderTicker("ibb", ibbRes.value);
-  if (icbRes.status === "fulfilled") {
-    icbPriceUSD = parseFloat(icbRes.value?.priceUsd || 0);
-    renderTicker("icb", icbRes.value);
-  }
-  if (plsRes.status === "fulfilled") {
-    plsPriceUSD = parseFloat(plsRes.value?.priceUsd || 0);
-  }
+  const [a,b,c]=await Promise.allSettled([fetchDexPrice(IBB_ADDRESS),fetchDexPrice(ICB_TOKEN),fetchDexPrice(WPLS)]);
+  if(a.status==="fulfilled")renderTicker("ibb",a.value);
+  if(b.status==="fulfilled"){icbPriceUSD=parseFloat(b.value?.priceUsd||0);renderTicker("icb",b.value);}
+  if(c.status==="fulfilled")plsPriceUSD=parseFloat(c.value?.priceUsd||0);
 }
-
-// ─────────────────────────────────────────────────────
-// POOL STATS
-// ─────────────────────────────────────────────────────
 async function loadPoolStats() {
-  const [holdersRes, distribRes] = await Promise.all([
-    ethCall(DISTRIBUTOR, SEL_HOLDERS),
-    ethCall(DISTRIBUTOR, SEL_DISTRIB),
-  ]);
-
-  if (holdersRes && holdersRes.length > 10) {
-    const holders = Number(readUint256(holdersRes, 0));
-    setEl("m-holders", holders.toLocaleString());
-  }
-
-  if (distribRes && distribRes.length > 10) {
-    const plsPaid = weiToNum(readUint256(distribRes, 0));
-    setEl("m-paid", fmt(plsPaid) + " PLS");
-    if (plsPriceUSD > 0) {
-      setEl("m-paid-usd", "≈ $" + fmt(plsPaid * plsPriceUSD) + " USD");
-    }
-  }
+  const [h,d]=await Promise.all([ethCall(DISTRIBUTOR,SEL_HOLDERS),ethCall(DISTRIBUTOR,SEL_DISTRIB)]);
+  if(h&&h.length>10)setEl("m-holders",Number(readUint256(h,0)).toLocaleString());
+  if(d&&d.length>10){const p=weiToNum(readUint256(d,0));setEl("m-paid",fmt(p)+" PLS");if(plsPriceUSD>0)setEl("m-paid-usd","≈ $"+fmt(p*plsPriceUSD)+" USD");}
 }
-
-// ─────────────────────────────────────────────────────
-// ICB BURNED
-// ─────────────────────────────────────────────────────
-let supplyChart = null;
-
+let supplyChart=null;
 async function loadICBBurned() {
-  // Fetch balances at both burn addresses + total supply in parallel
-  const [res369, resDead, resSupply] = await Promise.all([
-    ethCall(ICB_TOKEN, SEL_BALANCE + padAddr(ICB_ADDR_369)),
-    ethCall(ICB_TOKEN, SEL_BALANCE + padAddr(ICB_ADDR_DEAD)),
-    ethCall(ICB_TOKEN, SEL_SUPPLY),
-  ]);
-
-  if (!res369 || res369.length < 10) return;
-  if (!resDead || resDead.length < 10) return;
-  if (!resSupply || resSupply.length < 10) return;
-
-  // All three calls succeeded — decode values
-  const wei369     = readUint256(res369, 0);
-  const weiDead    = readUint256(resDead, 0);
-  const weiSupply  = readUint256(resSupply, 0);
-
-  // Convert to human-readable numbers
-  const burned369   = weiToNum(wei369);    // pre-IBB burns (to 0x369)
-  const burnedDead  = weiToNum(weiDead);   // IBB contract burns (to 0xdead)
-  const totalSupply = weiToNum(weiSupply); // ICB total supply
-
-  // ICB Burned metric = only what IBB sent to 0xdead
-  setEl("m-burned", fmt(burnedDead) + " ICB");
-  if (icbPriceUSD > 0) {
-    setEl("m-burned-usd", "≈ $" + fmt(burnedDead * icbPriceUSD) + " USD");
-  }
-
-  // Donut chart
-  updateSupplyChart(burned369, burnedDead, totalSupply);
+  const [r369,rDead,rSup]=await Promise.all([ethCall(ICB_TOKEN,SEL_BALANCE+padAddr(ICB_ADDR_369)),ethCall(ICB_TOKEN,SEL_BALANCE+padAddr(ICB_ADDR_DEAD)),ethCall(ICB_TOKEN,SEL_SUPPLY)]);
+  if(!r369||r369.length<10||!rDead||rDead.length<10||!rSup||rSup.length<10)return;
+  const b369=weiToNum(readUint256(r369,0)),bDead=weiToNum(readUint256(rDead,0)),total=weiToNum(readUint256(rSup,0));
+  setEl("m-burned",fmt(bDead)+" ICB");
+  if(icbPriceUSD>0)setEl("m-burned-usd","≈ $"+fmt(bDead*icbPriceUSD)+" USD");
+  updateSupplyChart(b369,bDead,total);
 }
-
-function updateSupplyChart(burned369, burnedDead, totalSupply) {
-  const circulating = Math.max(0, totalSupply - burned369 - burnedDead);
-  const pct369  = totalSupply > 0 ? ((burned369  / totalSupply) * 100).toFixed(2) : "0.00";
-  const pctDead = totalSupply > 0 ? ((burnedDead / totalSupply) * 100).toFixed(2) : "0.00";
-  const pctCirc = totalSupply > 0 ? ((circulating / totalSupply) * 100).toFixed(2) : "0.00";
-
-  setEl("leg-pre",    pct369  + "%");
-  setEl("leg-ibb",    pctDead + "%");
-  setEl("leg-circ",   pctCirc + "%");
-  setEl("leg-supply", "Total supply: " + fmt(totalSupply) + " ICB");
-
-  if (supplyChart) { supplyChart.destroy(); supplyChart = null; }
-
-  const ctx = document.getElementById("supplyChart");
-  if (!ctx) return;
-
-  supplyChart = new Chart(ctx.getContext("2d"), {
-    type: "doughnut",
-    data: {
-      labels: ["Pre-IBB Burned", "IBB Burned", "Circulating"],
-      datasets: [{
-        data: [burned369, burnedDead, circulating],
-        backgroundColor: ["#e85a2a", "#e8a02a", "#2acba8"],
-        borderColor:     ["#111113", "#111113", "#111113"],
-        borderWidth: 3,
-        hoverOffset: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: "68%",
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: "#17171a",
-          borderColor: "#333",
-          borderWidth: 1,
-          titleColor: "#8a8880",
-          bodyColor: "#f0ede8",
-          callbacks: {
-            label: ctx => {
-              const pct = totalSupply > 0
-                ? " (" + ((ctx.parsed / totalSupply) * 100).toFixed(2) + "%)"
-                : "";
-              return " " + ctx.label + ": " + fmt(ctx.parsed) + " ICB" + pct;
-            }
-          }
-        }
-      }
-    }
-  });
+function updateSupplyChart(b369,bDead,total) {
+  const circ=Math.max(0,total-b369-bDead);
+  const p369=(total>0?((b369/total)*100).toFixed(2):"0.00"), pDead=(total>0?((bDead/total)*100).toFixed(2):"0.00"), pCirc=(total>0?((circ/total)*100).toFixed(2):"0.00");
+  setEl("leg-pre",p369+"%"); setEl("leg-ibb",pDead+"%"); setEl("leg-circ",pCirc+"%"); setEl("leg-supply","Total supply: "+fmt(total)+" ICB");
+  if(supplyChart){supplyChart.destroy();supplyChart=null;}
+  const ctx=document.getElementById("supplyChart");
+  if(!ctx)return;
+  supplyChart=new Chart(ctx.getContext("2d"),{type:"doughnut",data:{labels:["Pre-IBB Burned","IBB Burned","Circulating"],datasets:[{data:[b369,bDead,circ],backgroundColor:["#e85a2a","#e8a02a","#0066FF"],borderColor:["#111113","#111113","#111113"],borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{backgroundColor:"#17171a",borderColor:"#333",borderWidth:1,titleColor:"#8a8880",bodyColor:"#f0ede8",callbacks:{label:c=>{const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":""; return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;}}}}}});
 }
-
-// ─────────────────────────────────────────────────────
-// WALLET LOOKUP
-// ─────────────────────────────────────────────────────
 async function lookupWallet() {
-  const addr  = document.getElementById("wallet-addr").value.trim();
-  const errEl = document.getElementById("wallet-error");
-  const resEl = document.getElementById("wallet-result");
-  const ldEl  = document.getElementById("wallet-loading");
-
-  errEl.textContent = "";
-  resEl.style.display = "none";
-
-  if (!/^0x[0-9a-fA-F]{40}$/.test(addr)) {
-    errEl.textContent = "Enter a valid 0x address.";
-    return;
-  }
-
-  ldEl.style.display = "block";
-
+  const addr=document.getElementById("wallet-addr").value.trim();
+  const errEl=document.getElementById("wallet-error"),resEl=document.getElementById("wallet-result"),ldEl=document.getElementById("wallet-loading");
+  errEl.textContent=""; resEl.style.display="none";
+  if(!/^0x[0-9a-fA-F]{40}$/.test(addr)){errEl.textContent="Enter a valid 0x address.";return;}
+  ldEl.style.display="block";
   try {
-    // Single RPC call — getPaidDividends(address) on distributor
-    const result = await ethCall(DISTRIBUTOR, SEL_PAID + padAddr(addr));
-    if (!result || result.length < 10) throw new Error("No data");
-
-    const paid = weiToNum(readUint256(result, 0));
-    if (paid === 0) {
-      errEl.textContent = "No rewards found for this wallet.";
-      return;
-    }
-
-    setEl("w-paid", fmt(paid, 4) + " PLS");
-    resEl.style.display = "block";
-  } catch (e) {
-    errEl.textContent = "Could not fetch: " + e.message;
-  } finally {
-    ldEl.style.display = "none";
-  }
+    const result=await ethCall(DISTRIBUTOR,SEL_PAID+padAddr(addr));
+    if(!result||result.length<10)throw new Error("No data");
+    const paid=weiToNum(readUint256(result,0));
+    if(paid===0){errEl.textContent="No rewards found for this wallet.";return;}
+    setEl("w-paid",fmt(paid,4)+" PLS"); resEl.style.display="block";
+  } catch(e){errEl.textContent="Could not fetch: "+e.message;}
+  finally{ldEl.style.display="none";}
 }
-
-// ─────────────────────────────────────────────────────
-// ORCHESTRATOR
-// ─────────────────────────────────────────────────────
 async function refreshAll() {
-  const btn = document.getElementById("refresh-btn");
-  btn.disabled = true;
-  btn.textContent = "Loading…";
-
-  try {
-    // Load prices first so icbPriceUSD and plsPriceUSD are set
-    await loadPrices();
-    // Then load on-chain stats in parallel
-    await Promise.allSettled([loadPoolStats(), loadICBBurned()]);
-  } catch (e) {
-    console.warn("refreshAll error:", e);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "↻ Refresh";
-  }
+  const btn=document.getElementById("refresh-btn"); btn.disabled=true; btn.textContent="Loading…";
+  try { await loadPrices(); await Promise.allSettled([loadPoolStats(),loadICBBurned()]); }
+  catch(e){console.warn("refreshAll error:",e);}
+  finally{btn.disabled=false;btn.textContent="↻ Refresh";}
 }
-
-// ─────────────────────────────────────────────────────
-// BOOT
-// ─────────────────────────────────────────────────────
-window.addEventListener("load", () => {
+window.addEventListener("load",()=>{
   refreshAll();
-
-  // Refresh prices every 30s
-  setInterval(() => {
-    loadPrices().then(() => {
-      // Re-run ICB burned USD label after price update
-      const burnedEl = document.getElementById("m-burned");
-      if (burnedEl && icbPriceUSD > 0) {
-        const burned = parseFloat(burnedEl.textContent.replace(/[^0-9.KMB]/g, ""));
-        // Just re-call full refresh — lightweight
-      }
-    });
-  }, 30000);
-
-  // Full refresh every 60s
-  setInterval(() => refreshAll(), 60000);
+  setInterval(()=>loadPrices(),30000);
+  setInterval(()=>refreshAll(),60000);
 });
 </script>
 </body>
