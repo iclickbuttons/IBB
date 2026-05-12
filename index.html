@@ -3,278 +3,544 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBB · ICB Dashboard</title>
+<title>IBB · ICB</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg:         #0c0d0f;
-    --bg2:        #141518;
-    --bg3:        #1c1e22;
-    --bg4:        #242629;
-    --border:     rgba(255,255,255,0.07);
-    --border2:    rgba(255,255,255,0.12);
-    --text:       #f0f0f0;
-    --muted:      #7a7d85;
-    --muted2:     #545760;
-    --orange:     #e8632a;
-    --orange-dim: rgba(232,99,42,0.13);
-    --teal:       #2acba8;
-    --teal-dim:   rgba(42,203,168,0.1);
-    --purple:     #8800FF;
-    --purple-dim: rgba(136,0,255,0.12);
-    --red:        #e83a3a;
-    --green:      #22c55e;
-    --mono:       'DM Mono', monospace;
-    --sans:       'DM Sans', sans-serif;
-    --radius:     12px;
-    --radius-sm:  8px;
-  }
+:root {
+  --bg:        #080A0C;
+  --surface:   #0E1114;
+  --surface2:  #141719;
+  --surface3:  #1A1D21;
+  --line:      rgba(255,255,255,0.06);
+  --line2:     rgba(255,255,255,0.10);
+  --text:      #ECEEF0;
+  --muted:     #5A5F68;
+  --muted2:    #3A3E45;
+  --orange:    #FF5C1A;
+  --orange-lo: rgba(255,92,26,0.10);
+  --orange-mid:rgba(255,92,26,0.20);
+  --purple:    #9B5DE5;
+  --purple-lo: rgba(155,93,229,0.10);
+  --teal:      #00C9A7;
+  --teal-lo:   rgba(0,201,167,0.10);
+  --red:       #FF4545;
+  --green:     #2ECC71;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Syne', sans-serif;
+  --r:         10px;
+  --r-sm:      6px;
+}
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-  /* ── Header ── */
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: rgba(12,13,15,0.92);
-    backdrop-filter: blur(12px);
-    z-index: 100;
-  }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .wordmark { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
-  .wordmark span { color: var(--orange); }
-  .live-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; font-family: var(--mono);
-    background: rgba(42,203,168,0.08); color: var(--teal);
-    border: 1px solid rgba(42,203,168,0.18);
-    border-radius: 20px; padding: 4px 11px;
-  }
-  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: livepulse 1.8s infinite; }
-  @keyframes livepulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted2); border-radius: 4px; }
 
-  .refresh-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: none; border: 1px solid var(--border2);
-    color: var(--muted); font-family: var(--sans);
-    font-size: 12px; font-weight: 500;
-    padding: 6px 14px; border-radius: 20px;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .refresh-btn:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
-  .refresh-btn:disabled { opacity: .4; cursor: default; }
-  .refresh-btn svg { width: 12px; height: 12px; }
-  .refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── Header ── */
+header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(8,10,12,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 50;
+}
 
-  /* ── Layout ── */
-  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-mark {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: var(--text);
+}
+.logo-mark span { color: var(--orange); }
 
-  /* ── Token ticker row ── */
-  .ticker {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    margin-bottom: 1.25rem;
-  }
-  @media(max-width:520px){ .ticker { grid-template-columns: 1fr; } }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  .ticker-panel {
-    background: var(--bg2);
-    padding: 1.1rem 1.4rem;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 1rem;
-    position: relative; overflow: hidden;
-  }
-  .ticker-panel::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 2px;
-    background: var(--orange); opacity: 0.6;
-  }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--teal);
+  background: var(--teal-lo);
+  border: 1px solid rgba(0,201,167,0.15);
+  border-radius: 100px;
+  padding: 4px 10px;
+  letter-spacing: 0.04em;
+}
+.pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  animation: heartbeat 2s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.6); opacity: 0.4; }
+}
 
-  .ticker-left { display: flex; align-items: center; gap: 11px; }
-  .ticker-logo { width: 40px; height: 40px; flex-shrink: 0; }
-  .ticker-logo svg { width: 100%; height: 100%; display: block; }
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--line2);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.btn-refresh:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
+.btn-refresh:disabled { opacity: 0.35; cursor: default; }
+.btn-refresh svg { width: 11px; height: 11px; flex-shrink: 0; }
+.btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .ticker-symbol { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--text); }
-  .ticker-name   { font-size: 12px; color: var(--muted2); margin-top: 2px; font-family: var(--mono); }
+/* ── Layout ── */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 6rem;
+}
 
-  .ticker-right { text-align: right; }
-  .ticker-price { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--teal); }
-  .ticker-meta  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 5px; flex-wrap: wrap; }
-  .ticker-change { font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 4px; }
-  .ticker-change.up   { background: rgba(42,203,168,0.13); color: var(--teal); }
-  .ticker-change.down { background: rgba(232,99,42,0.13);  color: var(--orange); }
-  .ticker-change.flat { background: var(--bg3); color: var(--muted2); }
-  .ticker-mcap { font-size: 11px; color: var(--muted2); font-family: var(--mono); }
-  .ticker-ca { margin-top: 5px; }
-  .ticker-ca a {
-    font-size: 11px; color: var(--muted2); font-family: var(--mono);
-    text-decoration: none; background: var(--bg3);
-    border: 1px solid var(--border); padding: 3px 9px;
-    border-radius: 5px; transition: all .15s; display: inline-flex; align-items: center; gap: 4px;
-  }
-  .ticker-ca a:hover { color: var(--orange); border-color: rgba(232,99,42,0.3); }
-  .ticker-ca a svg { width: 9px; height: 9px; }
+/* ── Section label ── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 
-  /* ── Metrics strip ── */
-  .metrics {
-    display: grid; grid-template-columns: repeat(3,1fr);
-    gap: 1px; background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    margin-bottom: 1.25rem;
-  }
-  @media(max-width:480px){ .metrics { grid-template-columns: 1fr; } }
+/* ── Token panels ── */
+.tokens-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 520px) { .tokens-grid { grid-template-columns: 1fr; } }
 
-  .metric { background: var(--bg2); padding: 1.25rem 1.4rem; }
-  .metric-lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); margin-bottom: 10px; }
-  .metric-val { font-family: var(--mono); font-size: 1.7rem; font-weight: 700; line-height: 1; color: var(--text); }
-  .metric-val.fire   { color: var(--orange); }
-  .metric-val.purple { color: #a855f7; }
-  .metric-val.teal   { color: var(--teal); }
-  .metric-sub { font-size: 11px; color: var(--muted2); margin-top: 6px; font-family: var(--mono); min-height: 16px; }
+.token-panel {
+  background: var(--surface);
+  padding: 1.25rem 1.25rem 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+.token-panel::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange) 30%, var(--orange) 70%, transparent);
+  opacity: 0.5;
+}
 
-  /* ── Cards ── */
-  .card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1.25rem 1.4rem;
-    margin-bottom: 1rem;
-  }
-  .card:last-child { margin-bottom: 0; }
-  .card-title {
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: .08em; color: var(--muted);
-    margin-bottom: 1rem; text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card-title::before {
-    content: ''; display: inline-block;
-    width: 3px; height: 12px;
-    background: var(--orange); border-radius: 2px;
-  }
+.token-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
 
-  /* ── Wallet ── */
-  .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
-  .wallet-row input {
-    flex: 1; background: var(--bg3);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 10px 14px; font-size: 13px; font-family: var(--mono);
-    color: var(--text); outline: none; transition: border-color .15s;
-  }
-  .wallet-row input:focus { border-color: var(--orange); }
-  .wallet-row input::placeholder { color: var(--muted2); }
-  .btn-go {
-    background: var(--orange-dim); border: 1px solid rgba(232,99,42,0.35);
-    color: var(--orange); font-family: var(--mono); font-size: 13px;
-    padding: 10px 18px; border-radius: var(--radius-sm);
-    cursor: pointer; white-space: nowrap; transition: all .15s;
-  }
-  .btn-go:hover { background: rgba(232,99,42,0.22); }
+.token-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .w-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
-  }
-  .w-row:last-child { border-bottom: none; }
-  .w-key { color: var(--muted); }
-  .w-val { font-family: var(--mono); font-size: 14px; color: var(--text); }
-  .w-val.purple { color: #a855f7; }
-  .w-val.teal   { color: var(--teal); }
-  .err { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
-  .dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--muted2); margin: 0 2px; animation: blink 1.2s infinite; }
-  .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.token-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+.token-icon svg { width: 100%; height: 100%; display: block; }
 
-  /* ── Donut ── */
-  .donut-wrap { position: relative; width: 100%; height: 200px; margin-top: 4px; }
-  .donut-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: 14px; font-family: var(--mono); font-size: 12px; flex-wrap: wrap; }
-  .donut-legend-item { display: flex; align-items: center; gap: 6px; }
-  .donut-legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
-  .donut-supply-label { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted2); margin-top: 8px; }
+.token-name-wrap {}
+.token-symbol {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+.token-name {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 3px;
+}
 
-  /* ── Footer ── */
-  .footer { margin-top: 2rem; text-align: center; font-size: 11px; color: var(--muted2); font-family: var(--mono); letter-spacing: 0.04em; }
+.token-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+}
+.token-badge.up   { background: rgba(0,201,167,0.12); color: var(--teal); }
+.token-badge.down { background: rgba(255,92,26,0.12);  color: var(--orange); }
+.token-badge.flat { background: var(--surface3); color: var(--muted); }
+
+.token-price {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.token-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.token-mcap {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.token-ca a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  background: var(--surface3);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  transition: all 0.15s;
+}
+.token-ca a:hover { color: var(--orange); border-color: var(--orange-mid); }
+.token-ca a svg { width: 8px; height: 8px; }
+
+/* ── Metrics ── */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 480px) { .metrics-row { grid-template-columns: 1fr; } }
+
+.metric {
+  background: var(--surface);
+  padding: 1.1rem 1.25rem;
+}
+
+.metric-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.metric-value.orange { color: var(--orange); }
+.metric-value.purple { color: var(--purple); }
+.metric-value.teal   { color: var(--teal); }
+
+.metric-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 6px;
+  min-height: 14px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.card-header {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-header-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--orange);
+  flex-shrink: 0;
+}
+
+/* ── Wallet ── */
+.wallet-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.wallet-input-row input {
+  flex: 1;
+  background: var(--surface3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  letter-spacing: 0.02em;
+}
+.wallet-input-row input::placeholder { color: var(--muted2); }
+.wallet-input-row input:focus { border-color: var(--orange); }
+
+.btn-check {
+  background: var(--orange-lo);
+  border: 1px solid var(--orange-mid);
+  color: var(--orange);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.btn-check:hover { background: rgba(255,92,26,0.18); }
+
+.wallet-result {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: none;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.result-label { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.result-value { font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--purple); }
+
+.err-msg {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--red);
+  margin-top: 8px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Loading dots ── */
+.dots { display: flex; gap: 4px; padding: 10px 0; }
+.dots span {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--muted2);
+  animation: dotblink 1.2s ease-in-out infinite;
+}
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotblink { 0%,100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+/* ── Donut chart ── */
+.donut-wrap {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  margin: 4px 0 16px;
+}
+
+.donut-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.legend-item span { color: var(--muted); }
+.legend-item strong { font-weight: 600; }
+
+.donut-total {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 10px;
+  letter-spacing: 0.06em;
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted2);
+  letter-spacing: 0.08em;
+  margin-top: 2.5rem;
+}
+
+/* ── Divider ── */
+.spacer { margin-bottom: 1.5rem; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-left">
-    <span class="wordmark">IBB <span>·</span> ICB</span>
-    <span class="live-pill"><span class="live-dot"></span>PulseChain</span>
+  <div class="logo">
+    <span class="logo-mark">IBB<span>·</span>ICB</span>
+    <span class="pill">
+      <span class="pulse"></span>
+      PULSECHAIN
+    </span>
   </div>
-  <button class="refresh-btn" id="refresh-btn" onclick="refreshAll()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5h3.5M13.5 2.5v4h-4"/></svg>
-    Refresh
-  </button>
+  <div class="header-right">
+    <button class="btn-refresh" id="refresh-btn" onclick="refreshAll()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5h3.5M13.5 2.5v4h-4"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
 </header>
 
 <main>
 
   <!-- Token tickers -->
-  <div class="ticker">
+  <div class="section-label">Tokens</div>
+  <div class="tokens-grid">
 
     <!-- IBB -->
-    <div class="ticker-panel">
-      <div class="ticker-left">
-        <div class="ticker-logo">
-          <svg viewBox="8 28 64 64" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="ibb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0E00"/><stop offset="100%" stop-color="#080400"/></radialGradient>
-              <radialGradient id="ibb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#FF8C00"/><stop offset="55%" stop-color="#D05500"/><stop offset="100%" stop-color="#6A2000"/></radialGradient>
-              <radialGradient id="ibb-shine" cx="35%" cy="25%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-              <radialGradient id="ibb-bezel" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#333"/><stop offset="100%" stop-color="#080808"/></radialGradient>
-              <linearGradient id="ibb-flame" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#CC2200"/><stop offset="35%" stop-color="#FF5500"/><stop offset="70%" stop-color="#FF9900"/><stop offset="100%" stop-color="#FFE000"/></linearGradient>
-              <linearGradient id="ibb-fcore" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#FF7700"/><stop offset="60%" stop-color="#FFE000"/><stop offset="100%" stop-color="#FFFFFF"/></linearGradient>
-              <radialGradient id="ibb-glow" cx="50%" cy="60%" r="55%"><stop offset="0%" stop-color="#FF4400" stop-opacity="0.8"/><stop offset="100%" stop-color="#FF2200" stop-opacity="0"/></radialGradient>
-              <clipPath id="ibb-clip"><circle cx="40" cy="60" r="32"/></clipPath>
-            </defs>
-            <circle cx="40" cy="60" r="32" fill="#080400"/>
-            <circle cx="40" cy="60" r="32" fill="url(#ibb-bg)"/>
-            <circle cx="40" cy="60" r="31" fill="none" stroke="#E86000" stroke-width="2.5"/>
-            <g clip-path="url(#ibb-clip)">
-              <ellipse cx="40" cy="62" rx="28" ry="30" fill="url(#ibb-glow)"/>
-              <path d="M28 72 C24 60 25 48 28 38 C29 44 30 50 32 54 C33 46 34 38 36 32 C37 40 37 50 39 56 C40 48 41 38 42 32 C44 38 45 46 46 54 C48 50 49 44 50 38 C53 48 54 60 50 72 Z" fill="url(#ibb-flame)"/>
-              <path d="M32 72 C30 62 31 52 33 44 C34 50 35 56 36 60 C37 52 38 44 40 38 C42 44 43 52 44 60 C45 56 46 50 47 44 C49 52 50 62 48 72 Z" fill="url(#ibb-fcore)" opacity="0.85"/>
-              <circle cx="40" cy="68" r="20" fill="url(#ibb-bezel)"/>
-              <circle cx="40" cy="68" r="18" fill="#0a0500"/>
-              <circle cx="40" cy="68" r="16" fill="url(#ibb-face)"/>
-              <circle cx="40" cy="68" r="16" fill="url(#ibb-shine)"/>
-              <g transform="translate(35,61)"><polygon points="0,0 1,12 4,9 6,14 8,13 6,8 9,8" fill="#ffffff"/></g>
-            </g>
-          </svg>
+    <div class="token-panel">
+      <div class="token-header">
+        <div class="token-identity">
+          <div class="token-icon">
+            <svg viewBox="8 28 64 64" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="ibb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0E00"/><stop offset="100%" stop-color="#080400"/></radialGradient>
+                <radialGradient id="ibb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#FF8C00"/><stop offset="55%" stop-color="#D05500"/><stop offset="100%" stop-color="#6A2000"/></radialGradient>
+                <radialGradient id="ibb-shine" cx="35%" cy="25%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+                <radialGradient id="ibb-bezel" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="#333"/><stop offset="100%" stop-color="#080808"/></radialGradient>
+                <linearGradient id="ibb-flame" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#CC2200"/><stop offset="35%" stop-color="#FF5500"/><stop offset="70%" stop-color="#FF9900"/><stop offset="100%" stop-color="#FFE000"/></linearGradient>
+                <linearGradient id="ibb-fcore" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#FF7700"/><stop offset="60%" stop-color="#FFE000"/><stop offset="100%" stop-color="#FFFFFF"/></linearGradient>
+                <radialGradient id="ibb-glow" cx="50%" cy="60%" r="55%"><stop offset="0%" stop-color="#FF4400" stop-opacity="0.8"/><stop offset="100%" stop-color="#FF2200" stop-opacity="0"/></radialGradient>
+                <clipPath id="ibb-clip"><circle cx="40" cy="60" r="32"/></clipPath>
+              </defs>
+              <circle cx="40" cy="60" r="32" fill="#080400"/>
+              <circle cx="40" cy="60" r="32" fill="url(#ibb-bg)"/>
+              <circle cx="40" cy="60" r="31" fill="none" stroke="#E86000" stroke-width="2.5"/>
+              <g clip-path="url(#ibb-clip)">
+                <ellipse cx="40" cy="62" rx="28" ry="30" fill="url(#ibb-glow)"/>
+                <path d="M28 72 C24 60 25 48 28 38 C29 44 30 50 32 54 C33 46 34 38 36 32 C37 40 37 50 39 56 C40 48 41 38 42 32 C44 38 45 46 46 54 C48 50 49 44 50 38 C53 48 54 60 50 72 Z" fill="url(#ibb-flame)"/>
+                <path d="M32 72 C30 62 31 52 33 44 C34 50 35 56 36 60 C37 52 38 44 40 38 C42 44 43 52 44 60 C45 56 46 50 47 44 C49 52 50 62 48 72 Z" fill="url(#ibb-fcore)" opacity="0.85"/>
+                <circle cx="40" cy="68" r="20" fill="url(#ibb-bezel)"/>
+                <circle cx="40" cy="68" r="18" fill="#0a0500"/>
+                <circle cx="40" cy="68" r="16" fill="url(#ibb-face)"/>
+                <circle cx="40" cy="68" r="16" fill="url(#ibb-shine)"/>
+                <g transform="translate(35,61)"><polygon points="0,0 1,12 4,9 6,14 8,13 6,8 9,8" fill="#ffffff"/></g>
+              </g>
+            </svg>
+          </div>
+          <div class="token-name-wrap">
+            <div class="token-symbol">IBB</div>
+            <div class="token-name">I Burn Buttons</div>
+          </div>
         </div>
-        <div>
-          <div class="ticker-symbol">IBB</div>
-          <div class="ticker-name">I Burn Buttons</div>
-        </div>
+        <span class="token-badge flat" id="ibb-change">—</span>
       </div>
-      <div class="ticker-right">
-        <div class="ticker-price" id="ibb-price">—</div>
-        <div class="ticker-meta">
-          <span class="ticker-change flat" id="ibb-change">—</span>
-          <span class="ticker-mcap" id="ibb-mcap"></span>
-        </div>
-        <div class="ticker-ca">
+      <div class="token-price" id="ibb-price">—</div>
+      <div class="token-footer">
+        <span class="token-mcap" id="ibb-mcap"></span>
+        <div class="token-ca">
           <a href="https://dexscreener.com/pulsechain/0x727bDF340CD00d5638704A7c05A88b2E485ceF6E" target="_blank" rel="noopener">
             0x727b…6E6E
             <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
@@ -284,39 +550,39 @@
     </div>
 
     <!-- ICB -->
-    <div class="ticker-panel">
-      <div class="ticker-left">
-        <div class="ticker-logo">
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="icb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0038"/><stop offset="100%" stop-color="#080010"/></radialGradient>
-              <radialGradient id="icb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#CC80FF"/><stop offset="45%" stop-color="#8800FF"/><stop offset="100%" stop-color="#4400AA"/></radialGradient>
-              <radialGradient id="icb-shine" cx="38%" cy="22%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
-              <clipPath id="icb-clip"><circle cx="50" cy="50" r="47"/></clipPath>
-            </defs>
-            <circle cx="50" cy="50" r="50" fill="#080010"/>
-            <circle cx="50" cy="50" r="47" fill="url(#icb-bg)"/>
-            <circle cx="50" cy="50" r="48.5" fill="none" stroke="#8800FF" stroke-width="3.5"/>
-            <g clip-path="url(#icb-clip)">
-              <circle cx="50" cy="50" r="38" fill="#100028"/>
-              <circle cx="50" cy="50" r="34" fill="url(#icb-face)"/>
-              <circle cx="50" cy="50" r="34" fill="url(#icb-shine)"/>
-              <g transform="translate(42, 38)"><polygon points="0,0 2,20 6,16 9,24 13,22 10,14 17,14" fill="#ffffff"/></g>
-            </g>
-          </svg>
+    <div class="token-panel">
+      <div class="token-header">
+        <div class="token-identity">
+          <div class="token-icon">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="icb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0038"/><stop offset="100%" stop-color="#080010"/></radialGradient>
+                <radialGradient id="icb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#CC80FF"/><stop offset="45%" stop-color="#8800FF"/><stop offset="100%" stop-color="#4400AA"/></radialGradient>
+                <radialGradient id="icb-shine" cx="38%" cy="22%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+                <clipPath id="icb-clip"><circle cx="50" cy="50" r="47"/></clipPath>
+              </defs>
+              <circle cx="50" cy="50" r="50" fill="#080010"/>
+              <circle cx="50" cy="50" r="47" fill="url(#icb-bg)"/>
+              <circle cx="50" cy="50" r="48.5" fill="none" stroke="#8800FF" stroke-width="3.5"/>
+              <g clip-path="url(#icb-clip)">
+                <circle cx="50" cy="50" r="38" fill="#100028"/>
+                <circle cx="50" cy="50" r="34" fill="url(#icb-face)"/>
+                <circle cx="50" cy="50" r="34" fill="url(#icb-shine)"/>
+                <g transform="translate(42, 38)"><polygon points="0,0 2,20 6,16 9,24 13,22 10,14 17,14" fill="#ffffff"/></g>
+              </g>
+            </svg>
+          </div>
+          <div class="token-name-wrap">
+            <div class="token-symbol">ICB</div>
+            <div class="token-name">I Click Buttons</div>
+          </div>
         </div>
-        <div>
-          <div class="ticker-symbol">ICB</div>
-          <div class="ticker-name">I Click Buttons</div>
-        </div>
+        <span class="token-badge flat" id="icb-change">—</span>
       </div>
-      <div class="ticker-right">
-        <div class="ticker-price" id="icb-price">—</div>
-        <div class="ticker-meta">
-          <span class="ticker-change flat" id="icb-change">—</span>
-          <span class="ticker-mcap" id="icb-mcap"></span>
-        </div>
-        <div class="ticker-ca">
+      <div class="token-price" id="icb-price">—</div>
+      <div class="token-footer">
+        <span class="token-mcap" id="icb-mcap"></span>
+        <div class="token-ca">
           <a href="https://dexscreener.com/pulsechain/0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27" target="_blank" rel="noopener">
             0xF8F1…2A27
             <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
@@ -327,71 +593,74 @@
 
   </div>
 
-  <!-- 3 metrics -->
-  <div class="metrics">
+  <!-- Metrics strip -->
+  <div class="section-label">Protocol Stats</div>
+  <div class="metrics-row">
     <div class="metric">
-      <div class="metric-lbl">🔥 ICB Burned</div>
-      <div class="metric-val purple" id="m-burned">—</div>
+      <div class="metric-label">ICB Burned</div>
+      <div class="metric-value purple" id="m-burned">—</div>
       <div class="metric-sub" id="m-burned-usd"></div>
     </div>
     <div class="metric">
-      <div class="metric-lbl">👥 Holders</div>
-      <div class="metric-val" id="m-holders">—</div>
+      <div class="metric-label">Holders</div>
+      <div class="metric-value" id="m-holders">—</div>
       <div class="metric-sub"></div>
     </div>
     <div class="metric">
-      <div class="metric-lbl">✅ Rewards Paid</div>
-      <div class="metric-val fire" id="m-paid">—</div>
+      <div class="metric-label">Rewards Paid</div>
+      <div class="metric-value orange" id="m-paid">—</div>
       <div class="metric-sub" id="m-paid-usd"></div>
     </div>
   </div>
 
   <!-- Wallet lookup -->
+  <div class="section-label">Wallet</div>
   <div class="card">
-    <div class="card-title">My Wallet</div>
-    <div class="wallet-row">
+    <div class="card-header"><span class="card-header-dot"></span>My Wallet</div>
+    <div class="wallet-input-row">
       <input type="text" id="wallet-addr" placeholder="0x… your wallet address" />
-      <button class="btn-go" onclick="lookupWallet()">Check →</button>
+      <button class="btn-check" onclick="lookupWallet()">Check →</button>
     </div>
-    <div id="wallet-loading" style="display:none;padding:8px 0;" class="dots"><span></span><span></span><span></span></div>
-    <div id="wallet-error" class="err"></div>
-    <div id="wallet-result" style="display:none;">
-      <div class="w-row">
-        <span class="w-key">Total rewards earned</span>
-        <span class="w-val purple" id="w-paid">—</span>
+    <div id="wallet-loading" style="display:none;"><div class="dots"><span></span><span></span><span></span></div></div>
+    <div id="wallet-error" class="err-msg"></div>
+    <div id="wallet-result" class="wallet-result">
+      <div class="result-row">
+        <span class="result-label">Total rewards earned</span>
+        <span class="result-value" id="w-paid">—</span>
       </div>
     </div>
   </div>
 
   <!-- ICB supply donut -->
+  <div class="section-label">Supply Breakdown</div>
   <div class="card">
-    <div class="card-title">ICB Burned vs Total Supply</div>
+    <div class="card-header"><span class="card-header-dot" style="background:var(--purple)"></span>ICB Burned vs Total Supply</div>
     <div class="donut-wrap">
       <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart"></canvas>
     </div>
     <div class="donut-legend">
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#00C9A7;"></span>
-        <span style="color:var(--muted)">Pre-IBB</span>
-        <span id="leg-pre" style="color:#00C9A7">—</span>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#00C9A7;"></span>
+        <span>Pre-IBB</span>
+        <strong id="leg-pre" style="color:#00C9A7;">—</strong>
       </div>
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#E86000;"></span>
-        <span style="color:var(--muted)">ICB Burned</span>
-        <span id="leg-ibb" style="color:#E86000">—</span>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#FF5C1A;"></span>
+        <span>ICB Burned</span>
+        <strong id="leg-ibb" style="color:#FF5C1A;">—</strong>
       </div>
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#8800FF;"></span>
-        <span style="color:var(--muted)">Circulating</span>
-        <span id="leg-circ" style="color:#8800FF">—</span>
+      <div class="legend-item">
+        <span class="legend-swatch" style="background:#9B5DE5;"></span>
+        <span>Circulating</span>
+        <strong id="leg-circ" style="color:#9B5DE5;">—</strong>
       </div>
     </div>
-    <div class="donut-supply-label" id="leg-supply"></div>
+    <div class="donut-total" id="leg-supply"></div>
   </div>
 
-  <div class="footer" id="last-updated">Fetching data…</div>
-
 </main>
+
+<footer id="last-updated">Connecting…</footer>
 
 <script>
 const IBB_ADDRESS  = "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E";
@@ -408,52 +677,86 @@ const SEL_DISTRIB  = "0x5695fa58";
 const SEL_PAID     = "0x3cbf8a61";
 
 let _reqId = 1;
-async function rpcCall(method, params = []) {
-  const resp = await fetch(RPC, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({jsonrpc:"2.0",id:_reqId++,method,params}) });
-  const data = await resp.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.result;
+async function rpcCall(method, params=[]) {
+  const r = await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:_reqId++,method,params})});
+  const d = await r.json();
+  if(d.error) throw new Error(d.error.message);
+  return d.result;
 }
 async function ethCall(to, data) { return rpcCall("eth_call",[{to,data},"latest"]); }
-function padAddr(addr) { return "000000000000000000000000"+addr.replace("0x","").toLowerCase(); }
-function readUint256(hex, slot) { const h = hex.startsWith("0x")?hex.slice(2):hex; return BigInt("0x"+h.slice(slot*64,slot*64+64)); }
-function weiToNum(w) { return Number(w/(10n**15n))/1000; }
-function fmt(n,dp=2) { if(n==null||isNaN(n))return"—"; const a=Math.abs(n); if(a>=1e9)return(n/1e9).toFixed(dp)+"B"; if(a>=1e6)return(n/1e6).toFixed(dp)+"M"; if(a>=1e3)return(n/1e3).toFixed(dp)+"K"; return n.toFixed(dp); }
-function fmtPrice(usd) { const n=parseFloat(usd); if(!n||isNaN(n))return"—"; if(n<0.000001)return"$"+n.toExponential(2); if(n<0.001)return"$"+n.toFixed(7); if(n<0.01)return"$"+n.toFixed(5); if(n<1)return"$"+n.toFixed(4); return"$"+n.toFixed(2); }
-function fmtMcap(n) { if(!n||isNaN(n))return""; if(n>=1e6)return"$"+(n/1e6).toFixed(2)+"M mcap"; if(n>=1e3)return"$"+(n/1e3).toFixed(1)+"K mcap"; return"$"+n.toFixed(0)+" mcap"; }
-function setEl(id,val) { const el=document.getElementById(id); if(el)el.textContent=val; }
+function padAddr(a) { return "000000000000000000000000"+a.replace("0x","").toLowerCase(); }
+function readU256(hex,slot) { const h=hex.startsWith("0x")?hex.slice(2):hex; return BigInt("0x"+h.slice(slot*64,slot*64+64)); }
+function weiToNum(w) { return Number(w/10n**15n)/1000; }
+function fmt(n,dp=2) {
+  if(n==null||isNaN(n)) return"—";
+  const a=Math.abs(n);
+  if(a>=1e9) return(n/1e9).toFixed(dp)+"B";
+  if(a>=1e6) return(n/1e6).toFixed(dp)+"M";
+  if(a>=1e3) return(n/1e3).toFixed(dp)+"K";
+  return n.toFixed(dp);
+}
+function fmtPrice(usd) {
+  const n=parseFloat(usd);
+  if(!n||isNaN(n)) return"—";
+  if(n<0.000001) return"$"+n.toExponential(2);
+  if(n<0.001)    return"$"+n.toFixed(7);
+  if(n<0.01)     return"$"+n.toFixed(5);
+  if(n<1)        return"$"+n.toFixed(4);
+  return"$"+n.toFixed(2);
+}
+function fmtMcap(n) {
+  if(!n||isNaN(n)) return"";
+  if(n>=1e6) return"$"+(n/1e6).toFixed(2)+"M mcap";
+  if(n>=1e3) return"$"+(n/1e3).toFixed(1)+"K mcap";
+  return"$"+n.toFixed(0)+" mcap";
+}
+function setEl(id,val) { const el=document.getElementById(id); if(el) el.textContent=val; }
 
 let icbPriceUSD=0, plsPriceUSD=0;
 
 async function fetchDexPrice(tokenAddr) {
-  const resp = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/"+tokenAddr);
-  const data = await resp.json();
-  const pairs = (Array.isArray(data)?data:data.pairs||[]).filter(p=>p&&p.priceUsd).sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0));
+  const r = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/"+tokenAddr);
+  const d = await r.json();
+  const pairs = (Array.isArray(d)?d:d.pairs||[])
+    .filter(p=>p&&p.priceUsd)
+    .sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0));
   return pairs[0]||null;
 }
 
-function renderTicker(prefix,pair) {
+function renderTicker(prefix, pair) {
   if(!pair) return 0;
-  const price=parseFloat(pair.priceUsd||0), pct=parseFloat(pair.priceChange?.h24||0), mcap=pair.marketCap||pair.fdv||0;
-  setEl(prefix+"-price",fmtPrice(price));
+  const price=parseFloat(pair.priceUsd||0);
+  const pct=parseFloat(pair.priceChange?.h24||0);
+  const mcap=pair.marketCap||pair.fdv||0;
+  setEl(prefix+"-price", fmtPrice(price));
   const el=document.getElementById(prefix+"-change");
-  if(el){ el.textContent=(pct>=0?"+":"")+pct.toFixed(2)+"% 24h"; el.className="ticker-change "+(pct>0.1?"up":pct<-0.1?"down":"flat"); }
-  setEl(prefix+"-mcap",fmtMcap(mcap));
+  if(el) {
+    el.textContent=(pct>=0?"+":"")+pct.toFixed(2)+"% 24h";
+    el.className="token-badge "+(pct>0.1?"up":pct<-0.1?"down":"flat");
+  }
+  setEl(prefix+"-mcap", fmtMcap(mcap));
   return price;
 }
 
 async function loadPrices() {
-  const [a,b,c]=await Promise.allSettled([fetchDexPrice(IBB_ADDRESS),fetchDexPrice(ICB_TOKEN),fetchDexPrice(WPLS)]);
+  const [a,b,c]=await Promise.allSettled([
+    fetchDexPrice(IBB_ADDRESS),
+    fetchDexPrice(ICB_TOKEN),
+    fetchDexPrice(WPLS)
+  ]);
   if(a.status==="fulfilled") renderTicker("ibb",a.value);
-  if(b.status==="fulfilled"){ icbPriceUSD=parseFloat(b.value?.priceUsd||0); renderTicker("icb",b.value); }
+  if(b.status==="fulfilled") { icbPriceUSD=parseFloat(b.value?.priceUsd||0); renderTicker("icb",b.value); }
   if(c.status==="fulfilled") plsPriceUSD=parseFloat(c.value?.priceUsd||0);
 }
 
 async function loadPoolStats() {
-  const [h,d]=await Promise.all([ethCall(DISTRIBUTOR,SEL_HOLDERS),ethCall(DISTRIBUTOR,SEL_DISTRIB)]);
-  if(h&&h.length>10) setEl("m-holders",Number(readUint256(h,0)).toLocaleString());
-  if(d&&d.length>10){
-    const p=weiToNum(readUint256(d,0));
+  const [h,d]=await Promise.all([
+    ethCall(DISTRIBUTOR,SEL_HOLDERS),
+    ethCall(DISTRIBUTOR,SEL_DISTRIB)
+  ]);
+  if(h&&h.length>10) setEl("m-holders",Number(readU256(h,0)).toLocaleString());
+  if(d&&d.length>10) {
+    const p=weiToNum(readU256(d,0));
     setEl("m-paid",fmt(p)+" PLS");
     if(plsPriceUSD>0) setEl("m-paid-usd","≈ $"+fmt(p*plsPriceUSD)+" USD");
   }
@@ -467,7 +770,9 @@ async function loadICBBurned() {
     ethCall(ICB_TOKEN,SEL_SUPPLY)
   ]);
   if(!r369||r369.length<10||!rDead||rDead.length<10||!rSup||rSup.length<10) return;
-  const b369=weiToNum(readUint256(r369,0)), bDead=weiToNum(readUint256(rDead,0)), total=weiToNum(readUint256(rSup,0));
+  const b369=weiToNum(readU256(r369,0));
+  const bDead=weiToNum(readU256(rDead,0));
+  const total=weiToNum(readU256(rSup,0));
   setEl("m-burned",fmt(bDead)+" ICB");
   if(icbPriceUSD>0) setEl("m-burned-usd","≈ $"+fmt(bDead*icbPriceUSD)+" USD");
   updateSupplyChart(b369,bDead,total);
@@ -475,42 +780,45 @@ async function loadICBBurned() {
 
 function updateSupplyChart(b369,bDead,total) {
   const circ=Math.max(0,total-b369-bDead);
-  const p369=(total>0?((b369/total)*100).toFixed(2):"0.00");
-  const pDead=(total>0?((bDead/total)*100).toFixed(2):"0.00");
-  const pCirc=(total>0?((circ/total)*100).toFixed(2):"0.00");
-  setEl("leg-pre",p369+"%"); setEl("leg-ibb",pDead+"%"); setEl("leg-circ",pCirc+"%");
+  const pct=(v)=>total>0?((v/total)*100).toFixed(2)+"%":"0.00%";
+  setEl("leg-pre",pct(b369));
+  setEl("leg-ibb",pct(bDead));
+  setEl("leg-circ",pct(circ));
   setEl("leg-supply","Total supply: "+fmt(total)+" ICB");
-  if(supplyChart){ supplyChart.destroy(); supplyChart=null; }
+  if(supplyChart) { supplyChart.destroy(); supplyChart=null; }
   const ctx=document.getElementById("supplyChart");
   if(!ctx) return;
   supplyChart=new Chart(ctx.getContext("2d"),{
     type:"doughnut",
     data:{
-      labels:["Pre-IBB Burned","ICB Burned","Circulating"],
+      labels:["Pre-IBB","ICB Burned","Circulating"],
       datasets:[{
         data:[b369,bDead,circ],
-        backgroundColor:["#00C9A7","#E86000","#8800FF"],
-        borderColor:["#141518","#141518","#141518"],
-        borderWidth:3,
-        hoverOffset:6
+        backgroundColor:["#00C9A7","#FF5C1A","#9B5DE5"],
+        borderColor:["#0E1114","#0E1114","#0E1114"],
+        borderWidth:4,
+        hoverOffset:8
       }]
     },
     options:{
       responsive:true,
       maintainAspectRatio:false,
-      cutout:"68%",
+      cutout:"72%",
       plugins:{
         legend:{display:false},
         tooltip:{
-          backgroundColor:"#1c1e22",
-          borderColor:"rgba(255,255,255,0.1)",
+          backgroundColor:"#1A1D21",
+          borderColor:"rgba(255,255,255,0.08)",
           borderWidth:1,
-          titleColor:"#7a7d85",
-          bodyColor:"#f0f0f0",
+          titleColor:"#5A5F68",
+          bodyColor:"#ECEEF0",
+          bodyFont:{family:"'JetBrains Mono',monospace",size:12},
+          titleFont:{family:"'JetBrains Mono',monospace",size:11},
+          padding:10,
           callbacks:{
             label:c=>{
               const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":"";
-              return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;
+              return "  "+c.label+": "+fmt(c.parsed)+" ICB"+p;
             }
           }
         }
@@ -524,21 +832,25 @@ async function lookupWallet() {
   const errEl=document.getElementById("wallet-error");
   const resEl=document.getElementById("wallet-result");
   const ldEl=document.getElementById("wallet-loading");
-  errEl.textContent=""; resEl.style.display="none";
-  if(!/^0x[0-9a-fA-F]{40}$/.test(addr)){ errEl.textContent="Enter a valid 0x address."; return; }
+  errEl.textContent="";
+  resEl.style.display="none";
+  if(!/^0x[0-9a-fA-F]{40}$/.test(addr)) { errEl.textContent="Enter a valid 0x address."; return; }
   ldEl.style.display="block";
   try {
     const result=await ethCall(DISTRIBUTOR,SEL_PAID+padAddr(addr));
     if(!result||result.length<10) throw new Error("No data");
-    const paid=weiToNum(readUint256(result,0));
-    if(paid===0){ errEl.textContent="No rewards found for this wallet."; return; }
+    const paid=weiToNum(readU256(result,0));
+    if(paid===0) { errEl.textContent="No rewards found for this wallet."; return; }
     setEl("w-paid",fmt(paid,4)+" PLS");
     resEl.style.display="block";
-  } catch(e){ errEl.textContent="Could not fetch: "+e.message; }
-  finally{ ldEl.style.display="none"; }
+  } catch(e) {
+    errEl.textContent="Could not fetch: "+e.message;
+  } finally {
+    ldEl.style.display="none";
+  }
 }
 
-document.getElementById("wallet-addr").addEventListener("keydown", e => { if(e.key==="Enter") lookupWallet(); });
+document.getElementById("wallet-addr").addEventListener("keydown",e=>{ if(e.key==="Enter") lookupWallet(); });
 
 async function refreshAll() {
   const btn=document.getElementById("refresh-btn");
@@ -546,18 +858,18 @@ async function refreshAll() {
   try {
     await loadPrices();
     await Promise.allSettled([loadPoolStats(),loadICBBurned()]);
-  } catch(e){ console.warn("refreshAll error:",e); }
+  } catch(e) { console.warn(e); }
   finally {
     btn.disabled=false; btn.classList.remove("spinning");
     const now=new Date();
-    setEl("last-updated","Last updated "+now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}));
+    setEl("last-updated","Updated "+now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}));
   }
 }
 
 window.addEventListener("load",()=>{
   refreshAll();
-  setInterval(()=>loadPrices(), 30000);
-  setInterval(()=>refreshAll(), 60000);
+  setInterval(()=>loadPrices(),30000);
+  setInterval(()=>refreshAll(),60000);
 });
 </script>
 </body>
