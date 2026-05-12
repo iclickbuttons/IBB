@@ -614,9 +614,9 @@ footer {
   </div>
 
   <!-- Wallet lookup -->
-  <div class="section-label">Wallet</div>
+  <div class="section-label">Reward Tracker</div>
   <div class="card">
-    <div class="card-header"><span class="card-header-dot"></span>My Wallet</div>
+    <div class="card-header"><span class="card-header-dot"></span>Reward Tracker</div>
     <div class="wallet-input-row">
       <input type="text" id="wallet-addr" placeholder="0x… your wallet address" />
       <button class="btn-check" onclick="lookupWallet()">Check →</button>
@@ -641,12 +641,12 @@ footer {
     <div class="donut-legend">
       <div class="legend-item">
         <span class="legend-swatch" style="background:#00C9A7;"></span>
-        <span>Pre-IBB</span>
+        <span>Burned Pre-IBB</span>
         <strong id="leg-pre" style="color:#00C9A7;">—</strong>
       </div>
       <div class="legend-item">
         <span class="legend-swatch" style="background:#FF5C1A;"></span>
-        <span>ICB Burned</span>
+        <span>ICB Burned by Protocol</span>
         <strong id="leg-ibb" style="color:#FF5C1A;">—</strong>
       </div>
       <div class="legend-item">
@@ -791,7 +791,7 @@ function updateSupplyChart(b369,bDead,total) {
   supplyChart=new Chart(ctx.getContext("2d"),{
     type:"doughnut",
     data:{
-      labels:["Pre-IBB","ICB Burned","Circulating"],
+      labels:["Burned Pre-IBB","ICB Burned by Protocol","Circulating"],
       datasets:[{
         data:[b369,bDead,circ],
         backgroundColor:["#00C9A7","#FF5C1A","#9B5DE5"],
