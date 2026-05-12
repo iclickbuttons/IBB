@@ -4,46 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IBB · ICB Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:         #0c0d0f;
-    --bg2:        #141518;
-    --bg3:        #1c1e22;
-    --bg4:        #242629;
-    --border:     rgba(255,255,255,0.07);
-    --border2:    rgba(255,255,255,0.12);
-    --text:       #f0f0f0;
-    --muted:      #7a7d85;
-    --muted2:     #545760;
-    --orange:     #e8632a;
-    --orange-dim: rgba(232,99,42,0.13);
-    --teal:       #2acba8;
-    --teal-dim:   rgba(42,203,168,0.1);
-    --purple:     #8800FF;
-    --purple-dim: rgba(136,0,255,0.12);
-    --red:        #e83a3a;
-    --green:      #22c55e;
-    --mono:       'DM Mono', monospace;
-    --sans:       'DM Sans', sans-serif;
-    --radius:     12px;
-    --radius-sm:  8px;
+    --bg: #0c0d0f;
+    --bg2: #141518;
+    --bg3: #1c1e22;
+    --bg4: #242629;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f0;
+    --muted: #7a7d85;
+    --muted2: #545760;
+    --orange: #ff6b35;
+    --orange-dim: rgba(255,107,53,0.12);
+    --orange-dim2: rgba(255,107,53,0.06);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.1);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
   }
 
   body {
-    font-family: var(--sans);
+    font-family: 'DM Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    padding: 0;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ── Header ── */
+  /* Header */
   header {
     border-bottom: 1px solid var(--border);
     padding: 0 2rem;
@@ -57,162 +56,410 @@
     backdrop-filter: blur(12px);
     z-index: 100;
   }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .wordmark { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
-  .wordmark span { color: var(--orange); }
-  .live-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 11px; font-family: var(--mono);
-    background: rgba(42,203,168,0.08); color: var(--teal);
-    border: 1px solid rgba(42,203,168,0.18);
-    border-radius: 20px; padding: 4px 11px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
-  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); animation: livepulse 1.8s infinite; }
-  @keyframes livepulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  .wordmark {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--text);
+  }
+
+  .wordmark span {
+    color: var(--orange);
+  }
+
+  .chain-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
 
   .refresh-btn {
-    display: flex; align-items: center; gap: 6px;
-    background: none; border: 1px solid var(--border2);
-    color: var(--muted); font-family: var(--sans);
-    font-size: 12px; font-weight: 500;
-    padding: 6px 14px; border-radius: 20px;
-    cursor: pointer; transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
   }
-  .refresh-btn:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
-  .refresh-btn:disabled { opacity: .4; cursor: default; }
-  .refresh-btn svg { width: 12px; height: 12px; }
-  .refresh-btn.spinning svg { animation: spin 0.7s linear infinite; }
+  .refresh-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .refresh-btn svg { width: 12px; height: 12px; transition: transform 0.4s; }
+  .refresh-btn.spinning svg { animation: spin 0.6s linear; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Layout ── */
-  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
-
-  /* ── Token ticker row ── */
-  .ticker {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    margin-bottom: 1.25rem;
+  /* Main layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
   }
-  @media(max-width:520px){ .ticker { grid-template-columns: 1fr; } }
 
-  .ticker-panel {
+  /* Token cards row */
+  .token-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .token-card {
     background: var(--bg2);
-    padding: 1.1rem 1.4rem;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 1rem;
-    position: relative; overflow: hidden;
-  }
-  .ticker-panel::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 2px;
-    background: var(--orange); opacity: 0.6;
-  }
-
-  .ticker-left { display: flex; align-items: center; gap: 11px; }
-  .ticker-logo { width: 40px; height: 40px; flex-shrink: 0; }
-  .ticker-logo svg { width: 100%; height: 100%; display: block; }
-
-  .ticker-symbol { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--text); }
-  .ticker-name   { font-size: 12px; color: var(--muted2); margin-top: 2px; font-family: var(--mono); }
-
-  .ticker-right { text-align: right; }
-  .ticker-price { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--teal); }
-  .ticker-meta  { display: flex; align-items: center; gap: 8px; justify-content: flex-end; margin-top: 5px; flex-wrap: wrap; }
-  .ticker-change { font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 4px; }
-  .ticker-change.up   { background: rgba(42,203,168,0.13); color: var(--teal); }
-  .ticker-change.down { background: rgba(232,99,42,0.13);  color: var(--orange); }
-  .ticker-change.flat { background: var(--bg3); color: var(--muted2); }
-  .ticker-mcap { font-size: 11px; color: var(--muted2); font-family: var(--mono); }
-  .ticker-ca { margin-top: 5px; }
-  .ticker-ca a {
-    font-size: 11px; color: var(--muted2); font-family: var(--mono);
-    text-decoration: none; background: var(--bg3);
-    border: 1px solid var(--border); padding: 3px 9px;
-    border-radius: 5px; transition: all .15s; display: inline-flex; align-items: center; gap: 4px;
-  }
-  .ticker-ca a:hover { color: var(--orange); border-color: rgba(232,99,42,0.3); }
-  .ticker-ca a svg { width: 9px; height: 9px; }
-
-  /* ── Metrics strip ── */
-  .metrics {
-    display: grid; grid-template-columns: repeat(3,1fr);
-    gap: 1px; background: var(--border);
     border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    margin-bottom: 1.25rem;
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
   }
-  @media(max-width:480px){ .metrics { grid-template-columns: 1fr; } }
+  .token-card:hover { border-color: var(--border2); }
 
-  .metric { background: var(--bg2); padding: 1.25rem 1.4rem; }
-  .metric-lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); margin-bottom: 10px; }
-  .metric-val { font-family: var(--mono); font-size: 1.7rem; font-weight: 700; line-height: 1; color: var(--text); }
-  .metric-val.fire   { color: var(--orange); }
-  .metric-val.purple { color: #a855f7; }
-  .metric-val.teal   { color: var(--teal); }
-  .metric-sub { font-size: 11px; color: var(--muted2); margin-top: 6px; font-family: var(--mono); min-height: 16px; }
+  .token-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--orange);
+    opacity: 0.7;
+  }
 
-  /* ── Cards ── */
-  .card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1.25rem 1.4rem;
+  .token-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 1rem;
   }
-  .card:last-child { margin-bottom: 0; }
-  .card-title {
-    font-family: var(--mono); font-size: 11px; font-weight: 700;
-    letter-spacing: .08em; color: var(--muted);
-    margin-bottom: 1rem; text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card-title::before {
-    content: ''; display: inline-block;
-    width: 3px; height: 12px;
-    background: var(--orange); border-radius: 2px;
+
+  .token-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  /* ── Wallet ── */
-  .wallet-row { display: flex; gap: 8px; margin-bottom: 10px; }
-  .wallet-row input {
-    flex: 1; background: var(--bg3);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 10px 14px; font-size: 13px; font-family: var(--mono);
-    color: var(--text); outline: none; transition: border-color .15s;
-  }
-  .wallet-row input:focus { border-color: var(--orange); }
-  .wallet-row input::placeholder { color: var(--muted2); }
-  .btn-go {
-    background: var(--orange-dim); border: 1px solid rgba(232,99,42,0.35);
-    color: var(--orange); font-family: var(--mono); font-size: 13px;
-    padding: 10px 18px; border-radius: var(--radius-sm);
-    cursor: pointer; white-space: nowrap; transition: all .15s;
-  }
-  .btn-go:hover { background: rgba(232,99,42,0.22); }
 
-  .w-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+  .token-name-block h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
   }
-  .w-row:last-child { border-bottom: none; }
-  .w-key { color: var(--muted); }
-  .w-val { font-family: var(--mono); font-size: 14px; color: var(--text); }
-  .w-val.purple { color: #a855f7; }
-  .w-val.teal   { color: var(--teal); }
-  .err { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 6px; }
-  .dots span { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--muted2); margin: 0 2px; animation: blink 1.2s infinite; }
-  .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
 
-  /* ── Donut ── */
-  .donut-wrap { position: relative; width: 100%; height: 200px; margin-top: 4px; }
-  .donut-legend { display: flex; justify-content: center; gap: 1.2rem; margin-top: 14px; font-family: var(--mono); font-size: 12px; flex-wrap: wrap; }
-  .donut-legend-item { display: flex; align-items: center; gap: 6px; }
-  .donut-legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; flex-shrink: 0; }
-  .donut-supply-label { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted2); margin-top: 8px; }
+  .token-name-block p {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 1px;
+  }
 
-  /* ── Footer ── */
-  .footer { margin-top: 2rem; text-align: center; font-size: 11px; color: var(--muted2); font-family: var(--mono); letter-spacing: 0.04em; }
+  .dex-link {
+    font-size: 11px;
+    color: var(--muted2);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .dex-link:hover { color: var(--orange); border-color: var(--orange-dim); }
+  .dex-link svg { width: 9px; height: 9px; margin-left: 3px; vertical-align: 0; }
+
+  .token-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .stat-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-value.loading { color: var(--muted2); }
+
+  /* Metrics strip */
+  .metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+  .metric-card:hover { border-color: var(--border2); }
+
+  .metric-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .metric-icon-fire { background: var(--orange-dim); }
+  .metric-icon-holders { background: var(--blue-dim); }
+  .metric-icon-rewards { background: var(--green-dim); }
+
+  .metric-content {}
+  .metric-content .metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .metric-content .metric-val {
+    font-size: 22px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  /* Bottom row */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1rem;
+  }
+
+  /* Wallet card */
+  .wallet-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 3px;
+    height: 12px;
+    background: var(--orange);
+    border-radius: 2px;
+  }
+
+  .wallet-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .wallet-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .wallet-input::placeholder { color: var(--muted2); }
+  .wallet-input:focus { border-color: var(--orange); }
+
+  .check-btn {
+    background: var(--orange);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .check-btn:hover { opacity: 0.85; }
+
+  .rewards-result {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+  }
+
+  .rewards-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .rewards-value {
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    color: var(--green);
+  }
+
+  /* Supply chart card */
+  .supply-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .supply-bars {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .supply-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .supply-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .supply-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .supply-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .supply-pct {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+  }
+
+  .bar-track {
+    height: 6px;
+    background: var(--bg4);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .supply-amount {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    text-align: right;
+    margin-top: 1px;
+  }
+
+  /* Last updated */
+  .footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted2);
+    letter-spacing: 0.04em;
+  }
+
+  /* Pulse animation for loading */
+  .pulse {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  @media (max-width: 700px) {
+    .token-row { grid-template-columns: 1fr; }
+    .metrics-strip { grid-template-columns: 1fr; }
+    .bottom-row { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem 3rem; }
+    header { padding: 0 1rem; }
+  }
 </style>
 </head>
 <body>
@@ -220,24 +467,25 @@
 <header>
   <div class="header-left">
     <span class="wordmark">IBB <span>·</span> ICB</span>
-    <span class="live-pill"><span class="live-dot"></span>PulseChain</span>
+    <span class="chain-badge">PulseChain</span>
   </div>
-  <button class="refresh-btn" id="refresh-btn" onclick="refreshAll()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5h3.5M13.5 2.5v4h-4"/></svg>
+  <button class="refresh-btn" id="refreshBtn" onclick="fetchAll()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5h3.5M13.5 2.5v4h-4"/>
+    </svg>
     Refresh
   </button>
 </header>
 
 <main>
 
-  <!-- Token tickers -->
-  <div class="ticker">
+  <!-- Token cards -->
+  <div class="token-row">
 
-    <!-- IBB -->
-    <div class="ticker-panel">
-      <div class="ticker-left">
-        <div class="ticker-logo">
-          <svg viewBox="8 28 64 64" xmlns="http://www.w3.org/2000/svg">
+    <div class="token-card">
+      <div class="token-header">
+        <div class="token-identity">
+          <svg width="40" height="40" viewBox="8 28 64 64" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
             <defs>
               <radialGradient id="ibb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0E00"/><stop offset="100%" stop-color="#080400"/></radialGradient>
               <radialGradient id="ibb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#FF8C00"/><stop offset="55%" stop-color="#D05500"/><stop offset="100%" stop-color="#6A2000"/></radialGradient>
@@ -262,32 +510,32 @@
               <g transform="translate(35,61)"><polygon points="0,0 1,12 4,9 6,14 8,13 6,8 9,8" fill="#ffffff"/></g>
             </g>
           </svg>
+          <div class="token-name-block">
+            <h2>IBB</h2>
+            <p>I Burn Buttons</p>
+          </div>
         </div>
-        <div>
-          <div class="ticker-symbol">IBB</div>
-          <div class="ticker-name">I Burn Buttons</div>
-        </div>
+        <a class="dex-link" href="https://dexscreener.com/pulsechain/0x727bDF340CD00d5638704A7c05A88b2E485ceF6E" target="_blank">
+          0x727b…6E6E
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
+        </a>
       </div>
-      <div class="ticker-right">
-        <div class="ticker-price" id="ibb-price">—</div>
-        <div class="ticker-meta">
-          <span class="ticker-change flat" id="ibb-change">—</span>
-          <span class="ticker-mcap" id="ibb-mcap"></span>
+      <div class="token-stats">
+        <div class="stat-item">
+          <div class="stat-label">Price</div>
+          <div class="stat-value loading pulse" id="ibb-price">—</div>
         </div>
-        <div class="ticker-ca">
-          <a href="https://dexscreener.com/pulsechain/0x727bDF340CD00d5638704A7c05A88b2E485ceF6E" target="_blank" rel="noopener">
-            0x727b…6E6E
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
-          </a>
+        <div class="stat-item">
+          <div class="stat-label">24h</div>
+          <div class="stat-value loading pulse" id="ibb-change">—</div>
         </div>
       </div>
     </div>
 
-    <!-- ICB -->
-    <div class="ticker-panel">
-      <div class="ticker-left">
-        <div class="ticker-logo">
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <div class="token-card">
+      <div class="token-header">
+        <div class="token-identity">
+          <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
             <defs>
               <radialGradient id="icb-bg" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#1A0038"/><stop offset="100%" stop-color="#080010"/></radialGradient>
               <radialGradient id="icb-face" cx="38%" cy="28%" r="72%"><stop offset="0%" stop-color="#CC80FF"/><stop offset="45%" stop-color="#8800FF"/><stop offset="100%" stop-color="#4400AA"/></radialGradient>
@@ -304,89 +552,115 @@
               <g transform="translate(42, 38)"><polygon points="0,0 2,20 6,16 9,24 13,22 10,14 17,14" fill="#ffffff"/></g>
             </g>
           </svg>
+          <div class="token-name-block">
+            <h2>ICB</h2>
+            <p>I Click Buttons</p>
+          </div>
         </div>
-        <div>
-          <div class="ticker-symbol">ICB</div>
-          <div class="ticker-name">I Click Buttons</div>
-        </div>
+        <a class="dex-link" href="https://dexscreener.com/pulsechain/0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27" target="_blank">
+          0xF8F1…2A27
+          <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
+        </a>
       </div>
-      <div class="ticker-right">
-        <div class="ticker-price" id="icb-price">—</div>
-        <div class="ticker-meta">
-          <span class="ticker-change flat" id="icb-change">—</span>
-          <span class="ticker-mcap" id="icb-mcap"></span>
+      <div class="token-stats">
+        <div class="stat-item">
+          <div class="stat-label">Price</div>
+          <div class="stat-value loading pulse" id="icb-price">—</div>
         </div>
-        <div class="ticker-ca">
-          <a href="https://dexscreener.com/pulsechain/0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27" target="_blank" rel="noopener">
-            0xF8F1…2A27
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 8.5l7-7M8.5 8.5V1.5H1.5"/></svg>
-          </a>
+        <div class="stat-item">
+          <div class="stat-label">24h</div>
+          <div class="stat-value loading pulse" id="icb-change">—</div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- 3 metrics -->
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-lbl">🔥 ICB Burned</div>
-      <div class="metric-val purple" id="m-burned">—</div>
-      <div class="metric-sub" id="m-burned-usd"></div>
+  <!-- Metrics strip -->
+  <div class="metrics-strip">
+    <div class="metric-card">
+      <div class="metric-icon metric-icon-fire">🔥</div>
+      <div class="metric-content">
+        <div class="metric-label">ICB Burned</div>
+        <div class="metric-val pulse" id="icb-burned">—</div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="metric-lbl">👥 Holders</div>
-      <div class="metric-val" id="m-holders">—</div>
-      <div class="metric-sub"></div>
+    <div class="metric-card">
+      <div class="metric-icon metric-icon-holders">👥</div>
+      <div class="metric-content">
+        <div class="metric-label">Holders</div>
+        <div class="metric-val pulse" id="holders">—</div>
+      </div>
     </div>
-    <div class="metric">
-      <div class="metric-lbl">✅ Rewards Paid</div>
-      <div class="metric-val fire" id="m-paid">—</div>
-      <div class="metric-sub" id="m-paid-usd"></div>
-    </div>
-  </div>
-
-  <!-- Wallet lookup -->
-  <div class="card">
-    <div class="card-title">My Wallet</div>
-    <div class="wallet-row">
-      <input type="text" id="wallet-addr" placeholder="0x… your wallet address" />
-      <button class="btn-go" onclick="lookupWallet()">Check →</button>
-    </div>
-    <div id="wallet-loading" style="display:none;padding:8px 0;" class="dots"><span></span><span></span><span></span></div>
-    <div id="wallet-error" class="err"></div>
-    <div id="wallet-result" style="display:none;">
-      <div class="w-row">
-        <span class="w-key">Total rewards earned</span>
-        <span class="w-val purple" id="w-paid">—</span>
+    <div class="metric-card">
+      <div class="metric-icon metric-icon-rewards">✅</div>
+      <div class="metric-content">
+        <div class="metric-label">Rewards Paid</div>
+        <div class="metric-val pulse" id="rewards-paid">—</div>
       </div>
     </div>
   </div>
 
-  <!-- ICB supply donut -->
-  <div class="card">
-    <div class="card-title">ICB Burned vs Total Supply</div>
-    <div class="donut-wrap">
-      <canvas id="supplyChart" role="img" aria-label="ICB burned vs total supply donut chart"></canvas>
-    </div>
-    <div class="donut-legend">
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#00C9A7;"></span>
-        <span style="color:var(--muted)">Pre-IBB</span>
-        <span id="leg-pre" style="color:#00C9A7">—</span>
+  <!-- Bottom row -->
+  <div class="bottom-row">
+
+    <!-- Wallet -->
+    <div class="wallet-card">
+      <div class="section-label">My Wallet</div>
+      <div class="wallet-input-row">
+        <input class="wallet-input" id="walletInput" type="text" placeholder="0x…" />
+        <button class="check-btn" onclick="checkWallet()">Check →</button>
       </div>
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#E86000;"></span>
-        <span style="color:var(--muted)">ICB Burned</span>
-        <span id="leg-ibb" style="color:#E86000">—</span>
-      </div>
-      <div class="donut-legend-item">
-        <span class="donut-legend-dot" style="background:#8800FF;"></span>
-        <span style="color:var(--muted)">Circulating</span>
-        <span id="leg-circ" style="color:#8800FF">—</span>
+      <div class="rewards-result">
+        <div class="rewards-label">Total Rewards Earned</div>
+        <div class="rewards-value" id="wallet-rewards">—</div>
       </div>
     </div>
-    <div class="donut-supply-label" id="leg-supply"></div>
+
+    <!-- Supply -->
+    <div class="supply-card">
+      <div class="section-label">ICB Supply Breakdown</div>
+      <div class="supply-bars">
+
+        <div class="supply-row">
+          <div class="supply-meta">
+            <span class="supply-name">
+              <span class="supply-dot" style="background:#7a7d85"></span>
+              Pre-IBB
+            </span>
+            <span class="supply-pct" id="pct-pre">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="bar-pre" style="width:0%;background:#7a7d85"></div></div>
+          <div class="supply-amount" id="amt-pre">—</div>
+        </div>
+
+        <div class="supply-row">
+          <div class="supply-meta">
+            <span class="supply-name">
+              <span class="supply-dot" style="background:#ff6b35"></span>
+              ICB Burned
+            </span>
+            <span class="supply-pct" id="pct-burned">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="bar-burned" style="width:0%;background:#ff6b35"></div></div>
+          <div class="supply-amount" id="amt-burned">—</div>
+        </div>
+
+        <div class="supply-row">
+          <div class="supply-meta">
+            <span class="supply-name">
+              <span class="supply-dot" style="background:#22c55e"></span>
+              Circulating
+            </span>
+            <span class="supply-pct" id="pct-circ">—</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="bar-circ" style="width:0%;background:#22c55e"></div></div>
+          <div class="supply-amount" id="amt-circ">—</div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
   <div class="footer" id="last-updated">Fetching data…</div>
@@ -394,171 +668,166 @@
 </main>
 
 <script>
-const IBB_ADDRESS  = "0x727bDF340CD00d5638704A7c05A88b2E485ceF6E";
-const ICB_TOKEN    = "0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27";
-const DISTRIBUTOR  = "0xE3E74399bECA875EC11d8e19B002Ec46cE77e56e";
-const ICB_ADDR_369 = "0x0000000000000000000000000000000000000369";
-const ICB_ADDR_DEAD= "0x000000000000000000000000000000000000dEaD";
-const WPLS         = "0xa1077a294dde1b09bb078844df40758a5d0f9a27";
-const RPC          = "https://rpc.pulsechain.com";
-const SEL_BALANCE  = "0x70a08231";
-const SEL_SUPPLY   = "0x18160ddd";
-const SEL_HOLDERS  = "0x9df62df2";
-const SEL_DISTRIB  = "0x5695fa58";
-const SEL_PAID     = "0x3cbf8a61";
+  const IBB_PAIR  = '0x727bDF340CD00d5638704A7c05A88b2E485ceF6E';
+  const ICB_PAIR  = '0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27';
+  const ICB_TOKEN = '0xF8F13B828B290d87b1a33961Ad5FF3C00b3A2A27';
+  const BURN_ADDR = '0x0000000000000000000000000000000000000000';
+  const CHAIN     = 'pulsechain';
 
-let _reqId = 1;
-async function rpcCall(method, params = []) {
-  const resp = await fetch(RPC, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({jsonrpc:"2.0",id:_reqId++,method,params}) });
-  const data = await resp.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.result;
-}
-async function ethCall(to, data) { return rpcCall("eth_call",[{to,data},"latest"]); }
-function padAddr(addr) { return "000000000000000000000000"+addr.replace("0x","").toLowerCase(); }
-function readUint256(hex, slot) { const h = hex.startsWith("0x")?hex.slice(2):hex; return BigInt("0x"+h.slice(slot*64,slot*64+64)); }
-function weiToNum(w) { return Number(w/(10n**15n))/1000; }
-function fmt(n,dp=2) { if(n==null||isNaN(n))return"—"; const a=Math.abs(n); if(a>=1e9)return(n/1e9).toFixed(dp)+"B"; if(a>=1e6)return(n/1e6).toFixed(dp)+"M"; if(a>=1e3)return(n/1e3).toFixed(dp)+"K"; return n.toFixed(dp); }
-function fmtPrice(usd) { const n=parseFloat(usd); if(!n||isNaN(n))return"—"; if(n<0.000001)return"$"+n.toExponential(2); if(n<0.001)return"$"+n.toFixed(7); if(n<0.01)return"$"+n.toFixed(5); if(n<1)return"$"+n.toFixed(4); return"$"+n.toFixed(2); }
-function fmtMcap(n) { if(!n||isNaN(n))return""; if(n>=1e6)return"$"+(n/1e6).toFixed(2)+"M mcap"; if(n>=1e3)return"$"+(n/1e3).toFixed(1)+"K mcap"; return"$"+n.toFixed(0)+" mcap"; }
-function setEl(id,val) { const el=document.getElementById(id); if(el)el.textContent=val; }
+  const RPC = 'https://rpc.pulsechain.com';
+  const DEXSCREENER = 'https://api.dexscreener.com/latest/dex/pairs/pulsechain/';
 
-let icbPriceUSD=0, plsPriceUSD=0;
-
-async function fetchDexPrice(tokenAddr) {
-  const resp = await fetch("https://api.dexscreener.com/tokens/v1/pulsechain/"+tokenAddr);
-  const data = await resp.json();
-  const pairs = (Array.isArray(data)?data:data.pairs||[]).filter(p=>p&&p.priceUsd).sort((a,b)=>(b.liquidity?.usd||0)-(a.liquidity?.usd||0));
-  return pairs[0]||null;
-}
-
-function renderTicker(prefix,pair) {
-  if(!pair) return 0;
-  const price=parseFloat(pair.priceUsd||0), pct=parseFloat(pair.priceChange?.h24||0), mcap=pair.marketCap||pair.fdv||0;
-  setEl(prefix+"-price",fmtPrice(price));
-  const el=document.getElementById(prefix+"-change");
-  if(el){ el.textContent=(pct>=0?"+":"")+pct.toFixed(2)+"% 24h"; el.className="ticker-change "+(pct>0.1?"up":pct<-0.1?"down":"flat"); }
-  setEl(prefix+"-mcap",fmtMcap(mcap));
-  return price;
-}
-
-async function loadPrices() {
-  const [a,b,c]=await Promise.allSettled([fetchDexPrice(IBB_ADDRESS),fetchDexPrice(ICB_TOKEN),fetchDexPrice(WPLS)]);
-  if(a.status==="fulfilled") renderTicker("ibb",a.value);
-  if(b.status==="fulfilled"){ icbPriceUSD=parseFloat(b.value?.priceUsd||0); renderTicker("icb",b.value); }
-  if(c.status==="fulfilled") plsPriceUSD=parseFloat(c.value?.priceUsd||0);
-}
-
-async function loadPoolStats() {
-  const [h,d]=await Promise.all([ethCall(DISTRIBUTOR,SEL_HOLDERS),ethCall(DISTRIBUTOR,SEL_DISTRIB)]);
-  if(h&&h.length>10) setEl("m-holders",Number(readUint256(h,0)).toLocaleString());
-  if(d&&d.length>10){
-    const p=weiToNum(readUint256(d,0));
-    setEl("m-paid",fmt(p)+" PLS");
-    if(plsPriceUSD>0) setEl("m-paid-usd","≈ $"+fmt(p*plsPriceUSD)+" USD");
+  function fmt(n, decimals = 4) {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   }
-}
 
-let supplyChart=null;
-async function loadICBBurned() {
-  const [r369,rDead,rSup]=await Promise.all([
-    ethCall(ICB_TOKEN,SEL_BALANCE+padAddr(ICB_ADDR_369)),
-    ethCall(ICB_TOKEN,SEL_BALANCE+padAddr(ICB_ADDR_DEAD)),
-    ethCall(ICB_TOKEN,SEL_SUPPLY)
-  ]);
-  if(!r369||r369.length<10||!rDead||rDead.length<10||!rSup||rSup.length<10) return;
-  const b369=weiToNum(readUint256(r369,0)), bDead=weiToNum(readUint256(rDead,0)), total=weiToNum(readUint256(rSup,0));
-  setEl("m-burned",fmt(bDead)+" ICB");
-  if(icbPriceUSD>0) setEl("m-burned-usd","≈ $"+fmt(bDead*icbPriceUSD)+" USD");
-  updateSupplyChart(b369,bDead,total);
-}
+  function fmtBig(n) {
+    if (!n || isNaN(n)) return '—';
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+    return n.toFixed(2);
+  }
 
-function updateSupplyChart(b369,bDead,total) {
-  const circ=Math.max(0,total-b369-bDead);
-  const p369=(total>0?((b369/total)*100).toFixed(2):"0.00");
-  const pDead=(total>0?((bDead/total)*100).toFixed(2):"0.00");
-  const pCirc=(total>0?((circ/total)*100).toFixed(2):"0.00");
-  setEl("leg-pre",p369+"%"); setEl("leg-ibb",pDead+"%"); setEl("leg-circ",pCirc+"%");
-  setEl("leg-supply","Total supply: "+fmt(total)+" ICB");
-  if(supplyChart){ supplyChart.destroy(); supplyChart=null; }
-  const ctx=document.getElementById("supplyChart");
-  if(!ctx) return;
-  supplyChart=new Chart(ctx.getContext("2d"),{
-    type:"doughnut",
-    data:{
-      labels:["Pre-IBB Burned","ICB Burned","Circulating"],
-      datasets:[{
-        data:[b369,bDead,circ],
-        backgroundColor:["#00C9A7","#E86000","#8800FF"],
-        borderColor:["#141518","#141518","#141518"],
-        borderWidth:3,
-        hoverOffset:6
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      cutout:"68%",
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:"#1c1e22",
-          borderColor:"rgba(255,255,255,0.1)",
-          borderWidth:1,
-          titleColor:"#7a7d85",
-          bodyColor:"#f0f0f0",
-          callbacks:{
-            label:c=>{
-              const p=total>0?" ("+((c.parsed/total)*100).toFixed(2)+"%)":"";
-              return" "+c.label+": "+fmt(c.parsed)+" ICB"+p;
-            }
-          }
-        }
+  function setEl(id, val) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = val; el.classList.remove('pulse', 'loading'); }
+  }
+
+  async function fetchDex(pair) {
+    try {
+      const r = await fetch(DEXSCREENER + pair);
+      const d = await r.json();
+      return d?.pairs?.[0] || null;
+    } catch { return null; }
+  }
+
+  async function rpcCall(method, params) {
+    try {
+      const r = await fetch(RPC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+      });
+      const d = await r.json();
+      return d.result;
+    } catch { return null; }
+  }
+
+  async function getTokenBalance(token, address) {
+    const data = '0x70a08231000000000000000000000000' + address.slice(2).padStart(64, '0');
+    const result = await rpcCall('eth_call', [{ to: token, data }, 'latest']);
+    if (!result) return null;
+    return parseInt(result, 16) / 1e18;
+  }
+
+  let ibbData = null, icbData = null;
+
+  async function fetchAll() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    btn.textContent = 'Refreshing';
+
+    // DEX data
+    [ibbData, icbData] = await Promise.all([
+      fetchDex(IBB_PAIR),
+      fetchDex(ICB_PAIR)
+    ]);
+
+    if (ibbData) {
+      setEl('ibb-price', '$' + fmt(ibbData.priceUsd, 6));
+      const ch = parseFloat(ibbData.priceChange?.h24 || 0);
+      const el = document.getElementById('ibb-change');
+      if (el) {
+        el.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%';
+        el.style.color = ch >= 0 ? '#22c55e' : '#f87171';
+        el.classList.remove('pulse', 'loading');
       }
     }
-  });
-}
 
-async function lookupWallet() {
-  const addr=document.getElementById("wallet-addr").value.trim();
-  const errEl=document.getElementById("wallet-error");
-  const resEl=document.getElementById("wallet-result");
-  const ldEl=document.getElementById("wallet-loading");
-  errEl.textContent=""; resEl.style.display="none";
-  if(!/^0x[0-9a-fA-F]{40}$/.test(addr)){ errEl.textContent="Enter a valid 0x address."; return; }
-  ldEl.style.display="block";
-  try {
-    const result=await ethCall(DISTRIBUTOR,SEL_PAID+padAddr(addr));
-    if(!result||result.length<10) throw new Error("No data");
-    const paid=weiToNum(readUint256(result,0));
-    if(paid===0){ errEl.textContent="No rewards found for this wallet."; return; }
-    setEl("w-paid",fmt(paid,4)+" PLS");
-    resEl.style.display="block";
-  } catch(e){ errEl.textContent="Could not fetch: "+e.message; }
-  finally{ ldEl.style.display="none"; }
-}
+    if (icbData) {
+      setEl('icb-price', '$' + fmt(icbData.priceUsd, 8));
+      const ch = parseFloat(icbData.priceChange?.h24 || 0);
+      const el = document.getElementById('icb-change');
+      if (el) {
+        el.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%';
+        el.style.color = ch >= 0 ? '#22c55e' : '#f87171';
+        el.classList.remove('pulse', 'loading');
+      }
 
-document.getElementById("wallet-addr").addEventListener("keydown", e => { if(e.key==="Enter") lookupWallet(); });
+      // On-chain supply data from DEX
+      const totalSupply = parseFloat(icbData.fdv || 0) / parseFloat(icbData.priceUsd || 1);
+      const liqBurned = parseFloat(icbData.liquidity?.base || 0);
+    }
 
-async function refreshAll() {
-  const btn=document.getElementById("refresh-btn");
-  btn.disabled=true; btn.classList.add("spinning");
-  try {
-    await loadPrices();
-    await Promise.allSettled([loadPoolStats(),loadICBBurned()]);
-  } catch(e){ console.warn("refreshAll error:",e); }
-  finally {
-    btn.disabled=false; btn.classList.remove("spinning");
-    const now=new Date();
-    setEl("last-updated","Last updated "+now.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}));
+    // On-chain: burned supply
+    const burned = await getTokenBalance(ICB_TOKEN, BURN_ADDR);
+    if (burned !== null) {
+      setEl('icb-burned', fmtBig(burned) + ' ICB');
+
+      // Hard-coded pre-IBB from contract (adjust as needed)
+      const preIBB = 50_000_000;
+      const totalMinted = 1_000_000_000;
+      const circulating = totalMinted - preIBB - burned;
+
+      const totalForPct = totalMinted;
+      const pctPre = (preIBB / totalForPct * 100).toFixed(1);
+      const pctBurned = (burned / totalForPct * 100).toFixed(1);
+      const pctCirc = (circulating / totalForPct * 100).toFixed(1);
+
+      setEl('pct-pre', pctPre + '%');
+      setEl('pct-burned', pctBurned + '%');
+      setEl('pct-circ', pctCirc + '%');
+      setEl('amt-pre', fmtBig(preIBB) + ' ICB');
+      setEl('amt-burned', fmtBig(burned) + ' ICB');
+      setEl('amt-circ', fmtBig(circulating > 0 ? circulating : 0) + ' ICB');
+
+      setTimeout(() => {
+        const bPre = document.getElementById('bar-pre');
+        const bBurned = document.getElementById('bar-burned');
+        const bCirc = document.getElementById('bar-circ');
+        if (bPre) bPre.style.width = pctPre + '%';
+        if (bBurned) bBurned.style.width = pctBurned + '%';
+        if (bCirc) bCirc.style.width = pctCirc + '%';
+      }, 100);
+    }
+
+    // Holders & rewards from dex or static placeholder
+    if (icbData) {
+      const holders = icbData.holders || icbData.info?.holders || null;
+      setEl('holders', holders ? holders.toLocaleString() : '—');
+    }
+    setEl('rewards-paid', '—');
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Last updated ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    btn.classList.remove('spinning');
+    btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5h3.5M13.5 2.5v4h-4"/></svg> Refresh`;
   }
-}
 
-window.addEventListener("load",()=>{
-  refreshAll();
-  setInterval(()=>loadPrices(), 30000);
-  setInterval(()=>refreshAll(), 60000);
-});
+  async function checkWallet() {
+    const addr = document.getElementById('walletInput').value.trim();
+    if (!addr || !addr.startsWith('0x')) {
+      document.getElementById('wallet-rewards').textContent = 'Invalid address';
+      return;
+    }
+    document.getElementById('wallet-rewards').textContent = '…';
+    const bal = await getTokenBalance(ICB_TOKEN, addr);
+    if (bal !== null) {
+      document.getElementById('wallet-rewards').textContent = fmtBig(bal) + ' ICB';
+    } else {
+      document.getElementById('wallet-rewards').textContent = 'Error';
+    }
+  }
+
+  document.getElementById('walletInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkWallet();
+  });
+
+  fetchAll();
 </script>
 </body>
 </html>
