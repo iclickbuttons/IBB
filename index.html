@@ -675,6 +675,10 @@ const SEL_HOLDERS  = "0x9df62df2";
 const SEL_DISTRIB  = "0x5695fa58";
 const SEL_PAID     = "0x3cbf8a61";
 
+// ICB the protocol burned by sending to the 0x…369 address (not dEaD).
+// Counted as a protocol burn and moved out of the "Burned Pre-IBB" slice.
+const PROTOCOL_BURN_369 = 51000;
+
 let _reqId = 1;
 async function rpcCall(method, params=[]) {
   const r = await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:_reqId++,method,params})});
@@ -772,9 +776,17 @@ async function loadICBBurned() {
   const b369=weiToNum(readU256(r369,0));
   const bDead=weiToNum(readU256(rDead,0));
   const total=weiToNum(readU256(rSup,0));
-  setEl("m-burned",fmt(bDead)+" ICB");
-  if(icbPriceUSD>0) setEl("m-burned-usd","≈ $"+fmt(bDead*icbPriceUSD)+" USD");
-  updateSupplyChart(b369,bDead,total);
+
+  // Split the 0x…369 balance: the protocol's 51K counts as a protocol burn,
+  // the remainder stays as the pre-IBB burn.
+  const protocol369=Math.min(PROTOCOL_BURN_369,b369);
+  const preIBB=Math.max(0,b369-protocol369);
+  const protocolBurned=bDead+protocol369;
+
+  setEl("m-burned",fmt(protocolBurned)+" ICB");
+  if(icbPriceUSD>0) setEl("m-burned-usd","≈ $"+fmt(protocolBurned*icbPriceUSD)+" USD");
+  else setEl("m-burned-usd","incl. "+fmt(protocol369,0)+" to 0x…369");
+  updateSupplyChart(preIBB,protocolBurned,total);
 }
 
 function updateSupplyChart(b369,bDead,total) {
