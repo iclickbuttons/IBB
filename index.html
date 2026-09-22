@@ -783,7 +783,9 @@ async function loadICBBurned() {
   const preIBB=Math.max(0,b369-protocol369);
   const protocolBurned=bDead+protocol369;
 
-  setEl("m-burned",fmt(protocolBurned)+" ICB");
+  // Show burned as a percent of total supply
+  const burnedPct=total>0?(protocolBurned/total)*100:0;
+  setEl("m-burned",burnedPct.toFixed(2)+"%");
   if(icbPriceUSD>0) setEl("m-burned-usd","≈ $"+fmt(protocolBurned*icbPriceUSD)+" USD");
   else setEl("m-burned-usd","incl. "+fmt(protocol369,0)+" to 0x…369");
   updateSupplyChart(preIBB,protocolBurned,total);
